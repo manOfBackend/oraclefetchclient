@@ -4,10 +4,11 @@ import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.stream.IntStream;
 
-public class Reader {
+public class Reader implements Runnable {
 
     // 쿼리당 가져오는 Row 수
     private int fetchSize = 10;
@@ -29,74 +30,48 @@ public class Reader {
      * @param rs
      * @throws SQLException
      */
-    private void writeToCsv(OracleResultSet rs) throws SQLException {
+    private void addAllToQueue(OracleResultSet rs) throws SQLException {
 
+        List<String[]> list = new ArrayList<>();
         while (rs.next()) {
             final int n = rs.getMetaData().getColumnCount();
-            final String[] line = IntStream.range(1, n).mapToObj(i -> {
-                try {
-                    return rs.getString(i);
-                } catch (SQLException throwables) {
-                    throwables.printStackTrace();
-                    return new String[]{};
-                }
-            }).toArray(size -> new String[size]);
-
-            QueueManager.addLine(line);
+            final String[] line = new String[n];
+            for (int i = 1; i<=n; i++) {
+                line[i-1] = rs.getString(i);
+            }
+            list.add(line);
+            if (list.size() == fetchSize) {
+                QueueManager.addList(new ArrayList<>(list));
+                list.clear();
+            }
         }
-
+        if (list.size() > 0) {
+            QueueManager.addList(new ArrayList<>(list));
+        }
     }
 
-    public void run() throws InterruptedException {
+    @Override
+    public void run() {
+        final String sql = "SELECT * FROM " + tableName;
+        System.out.println("Running: " + sql);
 
-        final Thread readerThread = new Thread("Reader") {
-            public void run() {
-                try {
-
-                    final OracleConnection conn = createConnection(hostName);
-
-                    final String sql = "SELECT * FROM " + tableName;
-
-                    System.out.println("Running: " + sql);
-
-                    final OracleResultSet result = createResultSet(conn, sql);
-
-
-                    //하이브에 벡터라이즈 엑시큐트 라는 게 있다. 벡터라이제이션
-                    //하이브에서 벡터라이즈할 수 있나 저장할 때도 파티셔닝할 수 있나
-                    //멀티세션도 답인데 이게 위험한 이유는
-                    // 두 세션이 열어서 쿼리 날렸을 때 중복이 발생하기 때문에
-                    // 하이브 인덱스 알아볼 것
-                    // 인덱스가 있어야 한다.
-                    // 인덱스가 있어야 빨리 가능하다.
-                    // hive optimization 으로 찾아볼 것
-                    //
-                    // result.setFetchSize(100);
-
-                    writeToCsv(result);
-
-                    // logic(result);
-
-                    result.close();
-                    statement.close();
-                    connection.close();
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    return;
-                }
+        OracleConnection conn = null;
+        OracleResultSet resultSet = null;
+        try {
+            conn = createConnection(hostName);
+            resultSet = createResultSet(conn, sql);
+            addAllToQueue(resultSet);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        finally {
+            try {
+                resultSet.close();
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
             }
-        };
-
-        long startTime = System.currentTimeMillis();
-        readerThread.start();
-
-        Thread writerThread = new Thread(Writer.getInstance());
-        writerThread.start();
-
-        readerThread.join();
-        writerThread.interrupt();
-        long estimatedTime = System.currentTimeMillis() - startTime;
-        System.out.println(estimatedTime / 1000.0);
+        }
     }
 
     private OracleResultSet createResultSet(OracleConnection conn, String sql) throws SQLException {
