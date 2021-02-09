@@ -1,8 +1,23 @@
+import avro.SchemaGenerator;
+import avro.SchemaResults;
+import avro.SchemaSqlMapping;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.hadoop.ParquetWriter;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +54,7 @@ public class Reader implements Runnable {
             for (int i = 1; i<=n; i++) {
                 line[i-1] = rs.getString(i);
             }
+
             list.add(line);
             if (list.size() == fetchSize) {
                 QueueManager.addList(new ArrayList<>(list));
@@ -57,11 +73,50 @@ public class Reader implements Runnable {
 
         OracleConnection conn = null;
         OracleResultSet resultSet = null;
+
+
+
+
         try {
             conn = createConnection(hostName);
             resultSet = createResultSet(conn, sql);
+
+            SchemaGenerator generator = new SchemaGenerator();
+
+            String schemaName = "jong2";
+            String namespace = "com.jong2";
+
+            try {
+                SchemaResults schemaResults = generator.generateSchema(resultSet, schemaName, namespace);
+
+                java.nio.file.Path tempFile = Paths.get("aaa.avsc");
+
+                org.apache.hadoop.fs.Path outputPath = new org.apache.hadoop.fs.Path(tempFile.toUri());
+
+                System.out.println(outputPath.toUri().toString());
+
+                final LocalFileSystem localFileSystem = FileSystem.getLocal(new Configuration());
+
+                AvroParquetWriter.builder()
+
+                ParquetWriter parquetWriter = AvroParquetWriter.builder(outputPath)
+                        .withSchema(schemaResults.getParsedSchema())
+                        .withConf(new Configuration())
+                        .withCompressionCodec(CompressionCodecName.SNAPPY)
+                        .build();
+
+
+
+                File file = localFileSystem.pathToFile(outputPath);
+                file.delete();
+
+
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+
             addAllToQueue(resultSet);
-        } catch (SQLException throwables) {
+        } catch (SQLException | IOException throwables) {
             throwables.printStackTrace();
         }
         finally {
@@ -75,14 +130,11 @@ public class Reader implements Runnable {
     }
 
     private OracleResultSet createResultSet(OracleConnection conn, String sql) throws SQLException {
-        String SQL = "select * from adid_test";
 
+        final OraclePreparedStatement oracleStmt = (OraclePreparedStatement) conn.prepareStatement(sql, OracleResultSet.FETCH_FORWARD);
 
-        final OraclePreparedStatement oracleStmt = (OraclePreparedStatement) conn.prepareStatement(SQL, OracleResultSet.FETCH_FORWARD,
-                OracleResultSet.CONCUR_READ_ONLY, OracleResultSet.TYPE_FORWARD_ONLY);
+        return (OracleResultSet) oracleStmt.executeQuery();
 
-
-        return (OracleResultSet) oracleStmt.getReturnResultSet();
     }
 
     private OracleConnection createConnection(String hostName) throws SQLException {
@@ -96,7 +148,4 @@ public class Reader implements Runnable {
         return conn;
     }
 
-    public static void main(String[] args) {
-
-    }
 }
