@@ -1,3 +1,5 @@
+import org.apache.avro.generic.GenericData;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class QueueManager {
 
-    private static final BlockingQueue<List<String[]>> queue = new LinkedBlockingQueue<>(1000);
+    private static final BlockingQueue<List<GenericData.Record>> queue = new LinkedBlockingQueue<>(1000);
 //    private static final Queue<List<String[]>> queue = new LinkedList<>();
 
 
@@ -31,15 +33,15 @@ public class QueueManager {
     }
 
 
-    public static void addList(List<String[]> list) {
+    public static void addList(List<GenericData.Record> list) {
         queue.add(list);
     }
 
-    public static Optional<List<String[]>> getList() throws InterruptedException {
+    public static Optional<List<GenericData.Record>> getList() throws InterruptedException {
         AtomicInteger atomicInteger = new AtomicInteger(3);
         atomicInteger.incrementAndGet();
 
-        return Optional.of(queue.poll(TIMEOUT, TIME_UNIT));
+        return Optional.ofNullable(queue.poll(TIMEOUT, TIME_UNIT));
 
     }
 }

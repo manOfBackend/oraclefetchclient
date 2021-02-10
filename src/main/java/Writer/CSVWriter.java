@@ -1,3 +1,7 @@
+package Writer;
+
+import org.apache.avro.generic.GenericData;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -5,25 +9,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
-public class Writer implements Runnable{
+public class CSVWriter extends Writer {
 
     private static com.opencsv.CSVWriter csvWriter;
 
-    private static Writer writer;
+    private static CSVWriter writer;
 
-    private static String outputPath = "output.csv";
-
-    public static String getOutputPath() {
-        return outputPath;
-    }
-
-    public static void setOutputPath(String outputPath) {
-        Writer.outputPath = outputPath;
-    }
-
-    private Writer(String path) {
+    private CSVWriter(String path) {
 
         initWriter(path);
     }
@@ -42,11 +35,11 @@ public class Writer implements Runnable{
         }
     }
 
-    public static Writer getInstance() {
+    public CSVWriter getInstance() {
         if (writer == null) {
-            synchronized (Writer.class) {
+            synchronized (CSVWriter.class) {
                 if (writer == null) {
-                    writer = new Writer(getOutputPath());
+                    writer = new CSVWriter(getOutputPath());
                 }
             }
         }
@@ -67,13 +60,13 @@ public class Writer implements Runnable{
         while(true) {
 
             try {
-                Optional<List<String[]>> optionalList = QueueManager.getList();
+                Optional<List<GenericData.Record>> optionalList = QueueManager.getList();
                 if (optionalList.isEmpty()) {
                     break;
                 }
 
-                List<String[]> list = optionalList.get();
-                for (String[] line : list) {
+                List<GenericData.Record> list = optionalList.get();
+                for (GenericData.Record line : list) {
                     csvWriter.writeNext(line);
                 }
             } catch (InterruptedException e) {

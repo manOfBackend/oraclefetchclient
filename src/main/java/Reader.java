@@ -1,3 +1,4 @@
+import avro.ResultSetTransformer;
 import avro.SchemaGenerator;
 import avro.SchemaResults;
 import avro.SchemaSqlMapping;
@@ -5,6 +6,8 @@ import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -74,9 +77,6 @@ public class Reader implements Runnable {
         OracleConnection conn = null;
         OracleResultSet resultSet = null;
 
-
-
-
         try {
             conn = createConnection(hostName);
             resultSet = createResultSet(conn, sql);
@@ -89,27 +89,54 @@ public class Reader implements Runnable {
             try {
                 SchemaResults schemaResults = generator.generateSchema(resultSet, schemaName, namespace);
 
-                java.nio.file.Path tempFile = Paths.get("aaa.avsc");
+                java.nio.file.Path tempFile = Paths.get("c:\\aaa.parquet");
 
                 org.apache.hadoop.fs.Path outputPath = new org.apache.hadoop.fs.Path(tempFile.toUri());
 
-                System.out.println(outputPath.toUri().toString());
-
                 final LocalFileSystem localFileSystem = FileSystem.getLocal(new Configuration());
 
-                AvroParquetWriter.builder()
+                File file = localFileSystem.pathToFile(outputPath);
+                if (file.exists()) {
+                    file.delete();
+                }
+
+                System.out.println(outputPath.toUri().toString());
 
                 ParquetWriter parquetWriter = AvroParquetWriter.builder(outputPath)
                         .withSchema(schemaResults.getParsedSchema())
-                        .withConf(new Configuration())
+                     //   .withConf(new Configuration())
                         .withCompressionCodec(CompressionCodecName.SNAPPY)
                         .build();
 
 
+                List<GenericRecord> records = new ArrayList<>();
 
-                File file = localFileSystem.pathToFile(outputPath);
-                file.delete();
+                int limit = 0;
+                while (resultSet.next()) {
 
+                    limit++;
+                    if (limit >= 10000) break;
+                    GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
+
+                    for (SchemaSqlMapping mapping : schemaResults.getMappings()) {
+
+                        builder.set(
+                                schemaResults.getParsedSchema().getField(mapping.getSchemaName()),
+                                ResultSetTransformer.extractResult(mapping, resultSet));
+                    }
+
+                    GenericRecord record = builder.build();
+                    records.add(record);
+
+                }
+
+                System.out.println(records.size());
+
+                for (GenericRecord record : records) {
+                    parquetWriter.write(record);
+                }
+
+                parquetWriter.close();
 
             } catch (SQLException throwables) {
                 throwables.printStackTrace();

@@ -9,63 +9,22 @@ import java.util.List;
 
 public interface ResultSetTransformer {
 
-    InputStream transform(ResultSet resultSet, String schemaName, String namespace) throws IOException, SQLException;
-
 
     static Object extractResult(SchemaSqlMapping mapping, ResultSet resultSet) throws SQLException {
 
-        switch (mapping.getSqlType()) {
-            case Types.BOOLEAN:
-                return resultSet.getBoolean(mapping.getSqlColumnName());
-            case Types.TINYINT:
-            case Types.SMALLINT:
-            case Types.INTEGER:
-            case Types.BIGINT:
-            case Types.ROWID:
-                return resultSet.getInt(mapping.getSqlColumnName());
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:
-            case Types.NCHAR:
-            case Types.NVARCHAR:
-            case Types.LONGNVARCHAR:
-            case Types.SQLXML:
-                return resultSet.getString(mapping.getSqlColumnName());
-            case Types.REAL:
-            case Types.FLOAT:
-                return resultSet.getFloat(mapping.getSqlColumnName());
-            case Types.DOUBLE:
-                return resultSet.getDouble(mapping.getSqlColumnName());
-            case Types.NUMERIC:
-                return resultSet.getBigDecimal(mapping.getSqlColumnName());
-            case Types.DECIMAL:
-                return resultSet.getBigDecimal(mapping.getSqlColumnName());
-            case Types.DATE:
-                return resultSet.getDate(mapping.getSqlColumnName()).getTime();
-            case Types.TIME:
-            case Types.TIME_WITH_TIMEZONE:
-                return resultSet.getTime(mapping.getSqlColumnName()).getTime();
-            case Types.TIMESTAMP:
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-                return resultSet.getTimestamp(mapping.getSqlColumnName()).getTime();
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case Types.NULL:
-            case Types.OTHER:
-            case Types.JAVA_OBJECT:
-            case Types.DISTINCT:
-            case Types.STRUCT:
-            case Types.ARRAY:
-            case Types.BLOB:
-            case Types.CLOB:
-            case Types.REF:
-            case Types.DATALINK:
-            case Types.NCLOB:
-            case Types.REF_CURSOR:
-                return resultSet.getByte(mapping.getSqlColumnName());
-            default:
-                return resultSet.getString(mapping.getSqlColumnName());
-        }
+        return switch (mapping.getSqlType()) {
+            case Types.BOOLEAN -> resultSet.getBoolean(mapping.getSqlColumnName());
+            case Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.ROWID -> resultSet.getInt(mapping.getSqlColumnName());
+            case Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.NCHAR, Types.NVARCHAR, Types.LONGNVARCHAR, Types.SQLXML -> resultSet.getString(mapping.getSqlColumnName());
+            case Types.REAL, Types.FLOAT -> resultSet.getFloat(mapping.getSqlColumnName());
+            case Types.DOUBLE -> resultSet.getDouble(mapping.getSqlColumnName());
+            case Types.NUMERIC -> resultSet.getBigDecimal(mapping.getSqlColumnName());
+            case Types.DECIMAL -> resultSet.getBigDecimal(mapping.getSqlColumnName());
+            case Types.DATE -> resultSet.getDate(mapping.getSqlColumnName()).getTime();
+            case Types.TIME, Types.TIME_WITH_TIMEZONE -> resultSet.getTime(mapping.getSqlColumnName()).getTime();
+            case Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> resultSet.getTimestamp(mapping.getSqlColumnName()).getTime();
+            case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY, Types.NULL, Types.OTHER, Types.JAVA_OBJECT, Types.DISTINCT, Types.STRUCT, Types.ARRAY, Types.BLOB, Types.CLOB, Types.REF, Types.DATALINK, Types.NCLOB, Types.REF_CURSOR -> resultSet.getByte(mapping.getSqlColumnName());
+            default -> resultSet.getString(mapping.getSqlColumnName());
+        };
     }
 }
