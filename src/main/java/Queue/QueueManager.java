@@ -1,17 +1,17 @@
+package Queue;
+
 import org.apache.avro.generic.GenericData;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class QueueManager {
+public class QueueManager<T> {
 
-    private static final BlockingQueue<List<GenericData.Record>> queue = new LinkedBlockingQueue<>(1000);
+    private final BlockingQueue<List<T>> queue = new LinkedBlockingQueue<>(1000);
 //    private static final Queue<List<String[]>> queue = new LinkedList<>();
 
 
@@ -23,23 +23,18 @@ public class QueueManager {
     // 대기하는 시간 단위
     private static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
 
-    private static class QueueManagerHolder {
+    public static <T> T getInstance(Class<T> t) throws IllegalAccessException, InstantiationException {
 
-        private static final QueueManager queueManager = new QueueManager();
-    }
+        return t.newInstance();
 
-    private static QueueManager getInstance() {
-        return QueueManagerHolder.queueManager;
     }
 
 
-    public static void addList(List<GenericData.Record> list) {
+    public void addList(List<T> list) {
         queue.add(list);
     }
 
-    public static Optional<List<GenericData.Record>> getList() throws InterruptedException {
-        AtomicInteger atomicInteger = new AtomicInteger(3);
-        atomicInteger.incrementAndGet();
+    public Optional<List<T>> getList() throws InterruptedException {
 
         return Optional.ofNullable(queue.poll(TIMEOUT, TIME_UNIT));
 

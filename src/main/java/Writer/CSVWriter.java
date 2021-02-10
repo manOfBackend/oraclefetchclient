@@ -1,5 +1,6 @@
 package Writer;
 
+import Queue.QueueManager;
 import org.apache.avro.generic.GenericData;
 
 import java.io.IOException;
@@ -14,9 +15,11 @@ public class CSVWriter extends Writer {
 
     private static com.opencsv.CSVWriter csvWriter;
 
-    private static CSVWriter writer;
+    public CSVWriter() {
+        this(Writer.getOutputPath());
+    }
 
-    private CSVWriter(String path) {
+    public CSVWriter(String path) {
 
         initWriter(path);
     }
@@ -25,7 +28,7 @@ public class CSVWriter extends Writer {
         Path myPath = Paths.get(path);
 
         try {
-            this.csvWriter = new com.opencsv.CSVWriter(Files.newBufferedWriter(myPath,
+            csvWriter = new com.opencsv.CSVWriter(Files.newBufferedWriter(myPath,
                     StandardCharsets.UTF_8), com.opencsv.CSVWriter.DEFAULT_SEPARATOR,
                     com.opencsv.CSVWriter.NO_QUOTE_CHARACTER, com.opencsv.CSVWriter.NO_ESCAPE_CHARACTER,
                     com.opencsv.CSVWriter.DEFAULT_LINE_END);
@@ -33,17 +36,6 @@ public class CSVWriter extends Writer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public CSVWriter getInstance() {
-        if (writer == null) {
-            synchronized (CSVWriter.class) {
-                if (writer == null) {
-                    writer = new CSVWriter(getOutputPath());
-                }
-            }
-        }
-        return writer;
     }
 
     private void flushAndClose(){
@@ -54,12 +46,15 @@ public class CSVWriter extends Writer {
             e.printStackTrace();
         }
     }
+
     @Override
     public void run() {
 
         while(true) {
 
             try {
+                QueueManager<String> queueManager = .getInstance();
+
                 Optional<List<GenericData.Record>> optionalList = QueueManager.getList();
                 if (optionalList.isEmpty()) {
                     break;

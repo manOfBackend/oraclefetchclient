@@ -1,11 +1,13 @@
+import Reader.Reader;
+import Writer.CSVWriter;
+
 public class Main {
 
     public static void main(String[] args) {
 
         Thread reader = new Thread(new Reader(10000, "adid_test",
                 "jdbc:oracle:thin:@localhost:1521:xe"));
-        Thread writer = new Thread(CSVWriter.getInstance());
-
+        Thread writer = new Thread(new CSVWriter(""));
 
         long startTime = System.currentTimeMillis();
         reader.start();
