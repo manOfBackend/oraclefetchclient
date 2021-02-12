@@ -3,7 +3,6 @@ package Writer;
 import Queue.CSVQueueManager;
 import Queue.FileType;
 import Queue.QueueManager;
-import Queue.QueueManagerFactory;
 import org.apache.avro.generic.GenericData;
 
 import java.io.IOException;

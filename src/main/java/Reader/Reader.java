@@ -58,16 +58,17 @@ public class Reader implements Runnable {
 //            for (int i = 1; i<=n; i++) {
 //                line[i-1] = rs.getString(i);
 //            }
-            GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
-
-            list.add(line);
-            if (list.size() == fetchSize) {
-                QueueManager.addList(new ArrayList<>(list));
-                list.clear();
-            }
+            // TODO: 리더 구현
+//            GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
+//
+//            list.add(line);
+//            if (list.size() == fetchSize) {
+//                QueueManager.addList(new ArrayList<>(list));
+//                list.clear();
+//            }
         }
         if (list.size() > 0) {
-            QueueManager.addList(new ArrayList<>(list));
+//            QueueManager.addList(new ArrayList<>(list));
         }
     }
 
