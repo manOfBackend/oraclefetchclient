@@ -60,8 +60,6 @@ public class Reader implements Runnable {
 //            }
             GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
 
-
-
             list.add(line);
             if (list.size() == fetchSize) {
                 QueueManager.addList(new ArrayList<>(list));

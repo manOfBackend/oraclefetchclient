@@ -1,6 +1,9 @@
 package Writer;
 
+import Queue.CSVQueueManager;
+import Queue.FileType;
 import Queue.QueueManager;
+import Queue.QueueManagerFactory;
 import org.apache.avro.generic.GenericData;
 
 import java.io.IOException;
@@ -13,18 +16,13 @@ import java.util.Optional;
 
 public class CSVWriter extends Writer {
 
-    private static com.opencsv.CSVWriter csvWriter;
+    private com.opencsv.CSVWriter csvWriter;
 
     public CSVWriter() {
         this(Writer.getOutputPath());
     }
 
     public CSVWriter(String path) {
-
-        initWriter(path);
-    }
-
-    private void initWriter(String path) {
         Path myPath = Paths.get(path);
 
         try {
@@ -38,6 +36,7 @@ public class CSVWriter extends Writer {
         }
     }
 
+
     private void flushAndClose(){
         try {
             csvWriter.flush();
@@ -47,28 +46,28 @@ public class CSVWriter extends Writer {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
 
         while(true) {
 
             try {
-                QueueManager<String> queueManager = .getInstance();
+                CSVQueueManager queueManager = CSVQueueManager.queueManager;
 
-                Optional<List<GenericData.Record>> optionalList = QueueManager.getList();
+
+                Optional<List<String[]>> optionalList = queueManager.getList();
                 if (optionalList.isEmpty()) {
                     break;
                 }
 
-                List<GenericData.Record> list = optionalList.get();
-                for (GenericData.Record line : list) {
+                List<String[]> list = optionalList.get();
+                for (String[] line : list) {
                     csvWriter.writeNext(line);
                 }
             } catch (InterruptedException e) {
                 break;
             }
-
-
         }
 
         flushAndClose();
