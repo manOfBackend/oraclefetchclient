@@ -1,9 +1,11 @@
 package Writer.Impl;
 
+import Queue.Impl.CSVQueueManager;
 import Queue.Impl.ParquetQueueManager;
 import Queue.QueueManager;
 import Writer.Writer;
 import avro.SchemaResults;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -14,6 +16,8 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("rawtypes")
 public class ParquetWriter extends Writer {
@@ -38,6 +42,7 @@ public class ParquetWriter extends Writer {
             e.printStackTrace();
         }
     }
+
     private Path getOutputFilePath() {
         java.nio.file.Path tempFile = Paths.get(getOutputPath());
 
@@ -56,9 +61,36 @@ public class ParquetWriter extends Writer {
 
         return outputPath;
     }
+
     @Override
     public void run() {
+        while (true) {
 
+            try {
+                ParquetQueueManager queue = (ParquetQueueManager) queueManager;
 
+                Optional<List<GenericRecord>> optionalList = queue.getList();
+                if (optionalList.isEmpty()) {
+                    break;
+                }
+
+                List<GenericRecord> list = optionalList.get();
+
+                for (GenericRecord record : list) {
+                    parquetWriter.write(record);
+                }
+
+            } catch (InterruptedException | IOException e) {
+                e.printStackTrace();
+                break;
+            }
+            finally {
+                try {
+                    parquetWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

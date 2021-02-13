@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CSVQueueManager extends QueueManager<String[]> {
-    public static final CSVQueueManager queueManager = new CSVQueueManager();
 
     @Override
     public void addAllFetchToQueue(ResultSet resultSet) throws SQLException {
@@ -24,12 +23,12 @@ public class CSVQueueManager extends QueueManager<String[]> {
 
             list.add(line);
             if (list.size() == resultSet.getFetchSize()) {
-                queueManager.addList(new ArrayList<>(list));
+                addList(new ArrayList<>(list));
                 list.clear();
             }
         }
         if (list.size() > 0) {
-            queueManager.addList(new ArrayList<>(list));
+            addList(new ArrayList<>(list));
         }
     }
 }

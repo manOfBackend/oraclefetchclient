@@ -1,11 +1,14 @@
 package Queue.Impl;
 
 import Queue.QueueManager;
+import avro.ResultSetTransformer;
 import avro.SchemaGenerator;
 import avro.SchemaResults;
+import avro.SchemaSqlMapping;
 import oracle.jdbc.OracleResultSet;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.GenericRecordBuilder;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,15 +21,20 @@ public class ParquetQueueManager extends QueueManager<GenericRecord> {
 
     private final SchemaGenerator generator = new SchemaGenerator();
 
-    private static final String schemaName = "jong2";
+    private final String schemaName;
 
-    private static final String namespace = "com.jong2";
+    private final String namespace;
+
+    private final ResultSetTransformer transformer;
 
     public SchemaResults getSchemaResults() {
         return schemaResults;
     }
 
-    public ParquetQueueManager() {
+    public ParquetQueueManager(ResultSetTransformer transformer, String schemaName, String namespace) {
+        this.transformer = transformer;
+        this.schemaName = schemaName;
+        this.namespace = namespace;
     }
 
     @Override
@@ -34,24 +42,27 @@ public class ParquetQueueManager extends QueueManager<GenericRecord> {
         if (schemaResults == null) {
             schemaResults = generator.generateSchema(resultSet, schemaName, namespace);
         }
-        List<GenericData.Record> list = new ArrayList<>();
+        GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
+        List<GenericRecord> list = new ArrayList<>();
+
         while (resultSet.next()) {
-//            final int n = rs.getMetaData().getColumnCount();
-//            final String[] line = new String[n];
-//            for (int i = 1; i<=n; i++) {
-//                line[i-1] = rs.getString(i);
-//            }
-            // TODO: 리더 구현
-//            GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
-//
-//            list.add(line);
-//            if (list.size() == fetchSize) {
-//                QueueManager.addList(new ArrayList<>(list));
-//                list.clear();
-//            }
+
+            for (SchemaSqlMapping mapping : schemaResults.getMappings()) {
+
+                builder.set(schemaResults.getParsedSchema().getField(mapping.getSchemaName()),
+                        transformer.extract(mapping, resultSet));
+            }
+
+            GenericRecord record = builder.build();
+
+            list.add(record);
+            if (list.size() == resultSet.getFetchSize()) {
+                addList(new ArrayList<>(list));
+                list.clear();
+            }
         }
         if (list.size() > 0) {
-//            QueueManager.addList(new ArrayList<>(list));
+            addList(new ArrayList<>(list));
         }
     }
 }

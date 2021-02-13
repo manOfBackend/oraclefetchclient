@@ -16,7 +16,6 @@ public class CSVWriter extends Writer {
 
     private com.opencsv.CSVWriter csvWriter;
 
-
     public CSVWriter(String outputPath, QueueManager<?> queueManager) {
         super(outputPath, queueManager);
         Path path = Paths.get(outputPath);
@@ -32,7 +31,6 @@ public class CSVWriter extends Writer {
         }
     }
 
-
     private void flushAndClose(){
         try {
             csvWriter.flush();
@@ -42,22 +40,22 @@ public class CSVWriter extends Writer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void run() {
 
         while(true) {
 
             try {
-                CSVQueueManager queueManager = CSVQueueManager.queueManager;
-
+                CSVQueueManager queueManager = new CSVQueueManager();
 
                 Optional<List<String[]>> optionalList = queueManager.getList();
+
                 if (optionalList.isEmpty()) {
                     break;
                 }
 
                 List<String[]> list = optionalList.get();
+
                 for (String[] line : list) {
                     csvWriter.writeNext(line);
                 }
@@ -67,7 +65,6 @@ public class CSVWriter extends Writer {
         }
 
         flushAndClose();
-
 
     }
 }
