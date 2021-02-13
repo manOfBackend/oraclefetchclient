@@ -53,7 +53,6 @@ public class OracleReader extends Reader {
         return conn;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         final String sql = "SELECT * FROM " + tableName;

@@ -1,3 +1,4 @@
+import Queue.Impl.CSVQueueManager;
 import Queue.Impl.ParquetQueueManager;
 import Reader.Impl.OracleReader;
 import Reader.Reader;
@@ -9,9 +10,10 @@ public class Main {
 
 
         ParquetQueueManager parquetQueueManager = new ParquetQueueManager();
+        CSVQueueManager csvQueueManager = new CSVQueueManager();
         Thread reader = new Thread(new OracleReader(10000, "adid_test",
                 "jdbc:oracle:thin:@localhost:1521:xe", parquetQueueManager));
-        Thread writer = new Thread(new CSVWriter(""));
+        Thread writer = new Thread(new CSVWriter("", csvQueueManager));
 
         long startTime = System.currentTimeMillis();
         reader.start();
