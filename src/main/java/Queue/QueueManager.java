@@ -1,7 +1,9 @@
 package Queue;
 
+import oracle.jdbc.OracleResultSet;
 import org.apache.avro.generic.GenericData;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -32,6 +34,9 @@ public abstract class QueueManager<T> {
         return Optional.ofNullable(queue.poll(TIMEOUT, TIME_UNIT));
 
     }
+
+    public abstract void addAllFetchToQueue(OracleResultSet rs) throws SQLException;
+
 
 
 }
