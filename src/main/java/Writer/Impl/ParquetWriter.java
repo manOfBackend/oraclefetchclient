@@ -1,24 +1,64 @@
 package Writer.Impl;
 
+import Queue.Impl.ParquetQueueManager;
+import Queue.QueueManager;
 import Writer.Writer;
-import avro.SchemaGenerator;
 import avro.SchemaResults;
-import oracle.jdbc.OracleResultSet;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
-import java.sql.SQLException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 
+@SuppressWarnings("rawtypes")
 public class ParquetWriter extends Writer {
 
+    private org.apache.parquet.hadoop.ParquetWriter parquetWriter;
+
+    public ParquetWriter(String outputPath, QueueManager<?> queueManager) {
+        super(outputPath, queueManager);
+
+        Path path = getOutputFilePath();
+        ParquetQueueManager parquetQueueManager = (ParquetQueueManager) queueManager;
+        SchemaResults schemaResults = parquetQueueManager.getSchemaResults();
+
+        org.apache.parquet.hadoop.ParquetWriter parquetWriter = null;
+        try {
+            this.parquetWriter = AvroParquetWriter.builder(path)
+                    .withSchema(schemaResults.getParsedSchema())
+                    //   .withConf(new Configuration())
+                    .withCompressionCodec(CompressionCodecName.SNAPPY)
+                    .build();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private Path getOutputFilePath() {
+        java.nio.file.Path tempFile = Paths.get(getOutputPath());
+
+        Path outputPath = new Path(tempFile.toUri());
+
+        try {
+            final LocalFileSystem localFileSystem = FileSystem.getLocal(new Configuration());
+            File file = localFileSystem.pathToFile(outputPath);
+            if (file.exists()) {
+                file.delete();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return outputPath;
+    }
     @Override
     public void run() {
 
-        org.apache.parquet.hadoop.ParquetWriter parquetWriter = AvroParquetWriter.builder(outputPath)
-                .withSchema(schemaResults.getParsedSchema())
-                //   .withConf(new Configuration())
-                .withCompressionCodec(CompressionCodecName.SNAPPY)
-                .build();
-        return parquetWriter;
+
     }
 }

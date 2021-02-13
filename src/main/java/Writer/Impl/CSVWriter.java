@@ -1,6 +1,7 @@
 package Writer.Impl;
 
 import Queue.Impl.CSVQueueManager;
+import Queue.QueueManager;
 import Writer.Writer;
 
 import java.io.IOException;
@@ -15,15 +16,13 @@ public class CSVWriter extends Writer {
 
     private com.opencsv.CSVWriter csvWriter;
 
-    public CSVWriter() {
-        this(Writer.getOutputPath());
-    }
 
-    public CSVWriter(String path) {
-        Path myPath = Paths.get(path);
+    public CSVWriter(String outputPath, QueueManager<?> queueManager) {
+        super(outputPath, queueManager);
+        Path path = Paths.get(outputPath);
 
         try {
-            csvWriter = new com.opencsv.CSVWriter(Files.newBufferedWriter(myPath,
+            csvWriter = new com.opencsv.CSVWriter(Files.newBufferedWriter(path,
                     StandardCharsets.UTF_8), com.opencsv.CSVWriter.DEFAULT_SEPARATOR,
                     com.opencsv.CSVWriter.NO_QUOTE_CHARACTER, com.opencsv.CSVWriter.NO_ESCAPE_CHARACTER,
                     com.opencsv.CSVWriter.DEFAULT_LINE_END);
