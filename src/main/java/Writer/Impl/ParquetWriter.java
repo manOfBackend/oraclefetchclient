@@ -24,12 +24,12 @@ public class ParquetWriter extends Writer {
 
     private org.apache.parquet.hadoop.ParquetWriter parquetWriter;
 
-    public ParquetWriter(String outputPath, QueueManager<?> queueManager) {
+    public ParquetWriter(String outputPath, ParquetQueueManager queueManager) {
         super(outputPath, queueManager);
 
         Path path = getOutputFilePath();
-        ParquetQueueManager parquetQueueManager = (ParquetQueueManager) queueManager;
-        SchemaResults schemaResults = parquetQueueManager.getSchemaResults();
+
+        SchemaResults schemaResults = queueManager.getSchemaResults();
 
         org.apache.parquet.hadoop.ParquetWriter parquetWriter = null;
         try {

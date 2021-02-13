@@ -4,6 +4,7 @@ import Queue.Impl.ParquetQueueManager;
 import Reader.Impl.OracleReader;
 import Reader.Reader;
 import Writer.Impl.CSVWriter;
+import Writer.Impl.ParquetWriter;
 import avro.Impl.OracleTransformer;
 import picocli.CommandLine;
 
@@ -33,7 +34,7 @@ public class TransferCli implements Callable<Integer> {
         CSVQueueManager csvQueueManager = new CSVQueueManager();
         Thread reader = new Thread(new OracleReader(10000, "adid_test",
                 "jdbc:oracle:thin:@localhost:1521:xe", parquetQueueManager));
-        Thread writer = new Thread(new CSVWriter("", csvQueueManager));
+        Thread writer = new Thread(new ParquetWriter("", parquetQueueManager));
 
         long startTime = System.currentTimeMillis();
         reader.start();

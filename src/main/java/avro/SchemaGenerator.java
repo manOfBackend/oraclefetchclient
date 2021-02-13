@@ -69,7 +69,7 @@ public class SchemaGenerator {
         fieldSchemas.add(intSchema);
         fieldSchemas.add(nullSchema);
 
-        Schema fieldSchema = recordSchema.createUnion(fieldSchemas);
+        Schema fieldSchema = Schema.createUnion(fieldSchemas);
 
         return new Schema.Field(columnName, fieldSchema, null, null);
     }

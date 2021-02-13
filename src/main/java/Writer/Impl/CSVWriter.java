@@ -16,7 +16,7 @@ public class CSVWriter extends Writer {
 
     private com.opencsv.CSVWriter csvWriter;
 
-    public CSVWriter(String outputPath, QueueManager<?> queueManager) {
+    public CSVWriter(String outputPath, CSVQueueManager queueManager) {
         super(outputPath, queueManager);
         Path path = Paths.get(outputPath);
 
