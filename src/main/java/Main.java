@@ -7,8 +7,10 @@ public class Main {
 
     public static void main(String[] args) {
 
+
+        ParquetQueueManager parquetQueueManager = new ParquetQueueManager();
         Thread reader = new Thread(new OracleReader(10000, "adid_test",
-                "jdbc:oracle:thin:@localhost:1521:xe", ParquetQueueManager.queueManager));
+                "jdbc:oracle:thin:@localhost:1521:xe", parquetQueueManager));
         Thread writer = new Thread(new CSVWriter(""));
 
         long startTime = System.currentTimeMillis();

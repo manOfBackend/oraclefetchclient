@@ -1,5 +1,6 @@
 package Reader;
 
+import Queue.Impl.ParquetQueueManager;
 import Queue.QueueManager;
 import avro.ResultSetTransformer;
 import avro.SchemaGenerator;
@@ -45,17 +46,6 @@ public abstract class Reader implements Runnable {
         this.tableName = tableName;
         this.hostName = hostName;
         this.queueManager = queueManager;
-    }
-
-    /**
-     * ResultSet이 가져온 쿼리 결과를 CSV에 저장하는 함수(기본 저장 경로: output.csv)
-     *
-     * @param rs
-     * @throws SQLException
-     */
-    protected void addAllFetchToQueue(OracleResultSet rs) throws SQLException {
-
-
     }
 
 

@@ -4,6 +4,7 @@ import Queue.QueueManager;
 import oracle.jdbc.OracleResultSet;
 import org.apache.avro.generic.GenericData;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ public class CSVQueueManager extends QueueManager<String[]> {
     public static final CSVQueueManager queueManager = new CSVQueueManager();
 
     @Override
-    public void addAllFetchToQueue(OracleResultSet rs) throws SQLException {
+    public void addAllFetchToQueue(ResultSet rs) throws SQLException {
         List<GenericData.Record> list = new ArrayList<>();
         while (rs.next()) {
 //            final int n = rs.getMetaData().getColumnCount();

@@ -1,5 +1,7 @@
 package Reader.Impl;
 
+import Queue.Impl.CSVQueueManager;
+import Queue.Impl.ParquetQueueManager;
 import Queue.QueueManager;
 import Reader.Reader;
 import avro.SchemaGenerator;
@@ -14,6 +16,7 @@ import org.apache.avro.generic.GenericRecordBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
@@ -50,6 +53,7 @@ public class OracleReader extends Reader {
         return conn;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         final String sql = "SELECT * FROM " + tableName;
@@ -62,69 +66,28 @@ public class OracleReader extends Reader {
             conn = createConnection(hostName);
             resultSet = createResultSet(conn, sql);
 
-            SchemaGenerator generator = new SchemaGenerator();
-
-            String schemaName = "jong2";
-            String namespace = "com.jong2";
-
+            SchemaResults schemaResults = getSchemaResults(resultSet);
             try {
-                SchemaResults schemaResults = generator.generateSchema(resultSet, schemaName, namespace);
 
-                java.nio.file.Path tempFile = Paths.get("c:\\aaa.parquet");
-
-                org.apache.hadoop.fs.Path outputPath = new org.apache.hadoop.fs.Path(tempFile.toUri());
-
-                final LocalFileSystem localFileSystem = FileSystem.getLocal(new Configuration());
-
-                File file = localFileSystem.pathToFile(outputPath);
-                if (file.exists()) {
-                    file.delete();
-                }
+                Path outputPath = getPath();
 
                 System.out.println(outputPath.toUri().toString());
 
-                ParquetWriter parquetWriter = AvroParquetWriter.builder(outputPath)
-                        .withSchema(schemaResults.getParsedSchema())
-                        //   .withConf(new Configuration())
-                        .withCompressionCodec(CompressionCodecName.SNAPPY)
-                        .build();
+                queueManager.addAllFetchToQueue(resultSet);
+//                ParquetWriter parquetWriter = getParquetWriter(schemaResults, outputPath);
+//
+//                for (GenericRecord record : records) {
+//                    parquetWriter.write(record);
+//                }
 
-
-                List<GenericRecord> records = new ArrayList<>();
-
-                int limit = 0;
-                while (resultSet.next()) {
-
-                    limit++;
-                    if (limit >= 10000) break;
-                    GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
-
-                    for (SchemaSqlMapping mapping : schemaResults.getMappings()) {
-
-                        // builder.set(
-                        //       schemaResults.getParsedSchema().getField(mapping.getSchemaName()),
-                        //     ResultSetTransformer.extractResult(mapping, resultSet));
-                    }
-
-                    GenericRecord record = builder.build();
-
-                    records.add(record);
-
-                }
-
-                System.out.println(records.size());
-
-                for (GenericRecord record : records) {
-                    parquetWriter.write(record);
-                }
-
-                parquetWriter.close();
+//                parquetWriter.close();
 
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
 
-            addAllFetchToQueue(resultSet);
+            queueManager.addAllFetchToQueue(resultSet);
+
         } catch (SQLException | IOException throwables) {
             throwables.printStackTrace();
         }
@@ -137,4 +100,39 @@ public class OracleReader extends Reader {
             }
         }
     }
+
+    private ParquetWriter getParquetWriter(SchemaResults schemaResults, Path outputPath) throws IOException {
+        ParquetWriter parquetWriter = AvroParquetWriter.builder(outputPath)
+                .withSchema(schemaResults.getParsedSchema())
+                //   .withConf(new Configuration())
+                .withCompressionCodec(CompressionCodecName.SNAPPY)
+                .build();
+        return parquetWriter;
+    }
+
+    private Path getPath() throws IOException {
+        java.nio.file.Path tempFile = Paths.get("c:\\aaa.parquet");
+
+        Path outputPath = new Path(tempFile.toUri());
+
+        final LocalFileSystem localFileSystem = FileSystem.getLocal(new Configuration());
+
+        File file = localFileSystem.pathToFile(outputPath);
+        if (file.exists()) {
+            file.delete();
+        }
+        return outputPath;
+    }
+
+    private SchemaResults getSchemaResults(OracleResultSet resultSet) throws SQLException {
+        SchemaGenerator generator = new SchemaGenerator();
+
+        String schemaName = "jong2";
+        String namespace = "com.jong2";
+
+        SchemaResults schemaResults = generator.generateSchema(resultSet, schemaName, namespace);
+        return schemaResults;
+    }
+
 }
+

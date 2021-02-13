@@ -3,6 +3,7 @@ package Queue;
 import oracle.jdbc.OracleResultSet;
 import org.apache.avro.generic.GenericData;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public abstract class QueueManager<T> {
 
     }
 
-    public abstract void addAllFetchToQueue(OracleResultSet rs) throws SQLException;
+    public abstract void addAllFetchToQueue(ResultSet rs) throws SQLException;
 
 
 
