@@ -31,7 +31,7 @@ public class TransferCli implements Callable<Integer> {
         System.exit(exitCode);
 
         ParquetQueueManager parquetQueueManager = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
-        CSVQueueManager csvQueueManager = new CSVQueueManager();
+
         Thread reader = new Thread(new OracleReader(10000, "adid_test",
                 "jdbc:oracle:thin:@localhost:1521:xe", parquetQueueManager));
         Thread writer = new Thread(new ParquetWriter("", parquetQueueManager));
