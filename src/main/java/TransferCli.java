@@ -26,6 +26,9 @@ public class TransferCli implements Callable<Integer> {
 
     public static void main(String[] args) {
 
+        int exitCode = new CommandLine(new TransferCli()).execute(args);
+        System.exit(exitCode);
+
         ParquetQueueManager parquetQueueManager = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
         CSVQueueManager csvQueueManager = new CSVQueueManager();
         Thread reader = new Thread(new OracleReader(10000, "adid_test",
@@ -48,6 +51,7 @@ public class TransferCli implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        // TODO:
         return null;
     }
 }
