@@ -1,4 +1,6 @@
-package Writer;
+package Writer.Impl;
+
+import Writer.Writer;
 
 public class ParquetWriter extends Writer {
 

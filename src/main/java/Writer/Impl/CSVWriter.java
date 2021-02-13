@@ -1,9 +1,7 @@
-package Writer;
+package Writer.Impl;
 
-import Queue.CSVQueueManager;
-import Queue.FileType;
-import Queue.QueueManager;
-import org.apache.avro.generic.GenericData;
+import Queue.Impl.CSVQueueManager;
+import Writer.Writer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

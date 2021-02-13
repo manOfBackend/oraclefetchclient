@@ -123,9 +123,9 @@ public class Reader implements Runnable {
 
                     for (SchemaSqlMapping mapping : schemaResults.getMappings()) {
 
-                        builder.set(
-                                schemaResults.getParsedSchema().getField(mapping.getSchemaName()),
-                                ResultSetTransformer.extractResult(mapping, resultSet));
+                       // builder.set(
+                         //       schemaResults.getParsedSchema().getField(mapping.getSchemaName()),
+                           //     ResultSetTransformer.extractResult(mapping, resultSet));
                     }
 
                     GenericRecord record = builder.build();

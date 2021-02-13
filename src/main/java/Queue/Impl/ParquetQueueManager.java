@@ -1,5 +1,6 @@
-package Queue;
+package Queue.Impl;
 
+import Queue.QueueManager;
 import org.apache.avro.generic.GenericData;
 
 public class ParquetQueueManager extends QueueManager<GenericData.Record> {

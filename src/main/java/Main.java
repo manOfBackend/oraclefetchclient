@@ -1,5 +1,5 @@
 import Reader.Reader;
-import Writer.CSVWriter;
+import Writer.Impl.CSVWriter;
 
 public class Main {
 
