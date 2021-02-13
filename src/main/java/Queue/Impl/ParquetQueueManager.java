@@ -2,11 +2,9 @@ package Queue.Impl;
 
 import Queue.QueueManager;
 import avro.ResultSetTransformer;
-import avro.SchemaGenerator;
-import avro.SchemaResults;
-import avro.SchemaSqlMapping;
-import oracle.jdbc.OracleResultSet;
-import org.apache.avro.generic.GenericData;
+import avro.Schema.SchemaGenerator;
+import avro.Schema.SchemaResults;
+import avro.Schema.SchemaSqlMapping;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 

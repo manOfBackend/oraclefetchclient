@@ -1,4 +1,4 @@
-package avro;
+package avro.Schema;
 
 import org.apache.avro.Schema;
 

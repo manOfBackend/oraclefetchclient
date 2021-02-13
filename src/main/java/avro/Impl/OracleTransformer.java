@@ -1,7 +1,7 @@
 package avro.Impl;
 
 import avro.ResultSetTransformer;
-import avro.SchemaSqlMapping;
+import avro.Schema.SchemaSqlMapping;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,10 +1,8 @@
 package Writer.Impl;
 
-import Queue.Impl.CSVQueueManager;
 import Queue.Impl.ParquetQueueManager;
-import Queue.QueueManager;
 import Writer.Writer;
-import avro.SchemaResults;
+import avro.Schema.SchemaResults;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
