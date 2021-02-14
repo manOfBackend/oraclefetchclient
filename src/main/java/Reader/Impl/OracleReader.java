@@ -13,8 +13,8 @@ import java.util.Properties;
 public class OracleReader extends Reader {
 
     @SuppressWarnings("rawtypes")
-    public OracleReader(int fetchSize, String tableName, String hostName, QueueManager queueManager) {
-        super(fetchSize, tableName, hostName, queueManager);
+    public OracleReader(int fetchSize, String tableName, String hostName, String userName, String password, QueueManager queueManager) {
+        super(fetchSize, tableName, hostName, userName, password, queueManager);
     }
 
     private OracleResultSet createResultSet(OracleConnection conn, String sql) throws SQLException {

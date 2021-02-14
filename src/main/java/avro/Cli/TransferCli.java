@@ -19,14 +19,23 @@ import static picocli.CommandLine.Option;
         subcommands = {SingleCli.class, ParallelCli.class})
 public class TransferCli implements Callable<Integer> {
 
-    @Option(names = {"-r", "--read-file-type"}, description = "Read File Type (CSV, PARQUET)", defaultValue = "CSV", required = true)
-    private FileType readFileType;
-
-    @Option(names = {"-w", "--write-file-type"}, description = "Write File Type (CSV, PARQUET)", defaultValue = "CSV", required = true)
-    private FileType writeFileType;
+    @Option(names = {"-t", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
+    private FileType fileType;
 
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
+
+    @Option(names = {"-t", "--table-name"}, required = true)
+    private String tableName;
+
+    @Option(names = {"-h", "--host-name"}, required = true)
+    private String hostName;
+
+    @Option(names = {"-u", "--user-name"}, required = true)
+    private String userName;
+
+    @Option(names = {"-p", "--password"}, required = true)
+    private String password;
 
     public static void main(String[] args) {
 
@@ -36,27 +45,32 @@ public class TransferCli implements Callable<Integer> {
 
     }
 
+    public String getHostName() {
+        return hostName;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public FileType getFileType() {
+        return fileType;
+    }
+
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
     @Override
     public Integer call() throws Exception {
-        // TODO:
-        ParquetQueueManager parquetQueueManager = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
-
-        Thread reader = new Thread(new OracleReader(10000, "adid_test",
-                "jdbc:oracle:thin:@localhost:1521:xe", parquetQueueManager));
-        Thread writer = new Thread(new ParquetWriter("", parquetQueueManager));
-
-        long startTime = System.currentTimeMillis();
-        reader.start();
-        //  writer.start();
-        try {
-            reader.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        //   writer.interrupt();
-        long estimatedTime = System.currentTimeMillis() - startTime;
-        System.out.println(estimatedTime / 1000.0);
-
         return null;
     }
 }
