@@ -12,8 +12,11 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
 
+/**
+ * one to one thread
+ */
 @Command(description = "ADID Transfer", name = "transfer", mixinStandardHelpOptions = true, version = "transfer 1.0",
-        subcommands = {ParallelCli.class})
+        subcommands = {SingleCli.class, ParallelCli.class})
 public class TransferCli implements Callable<Integer> {
 
     @Option(names = {"-r", "--read-file-type"}, description = "Read File Type (CSV, PARQUET)", defaultValue = "CSV", required = true)
@@ -30,6 +33,12 @@ public class TransferCli implements Callable<Integer> {
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         System.exit(exitCode);
 
+
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        // TODO:
         ParquetQueueManager parquetQueueManager = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
 
         Thread reader = new Thread(new OracleReader(10000, "adid_test",
@@ -48,11 +57,6 @@ public class TransferCli implements Callable<Integer> {
         long estimatedTime = System.currentTimeMillis() - startTime;
         System.out.println(estimatedTime / 1000.0);
 
-    }
-
-    @Override
-    public Integer call() throws Exception {
-        // TODO:
         return null;
     }
 }
