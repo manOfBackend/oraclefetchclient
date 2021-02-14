@@ -28,8 +28,8 @@ public class OracleReader extends Reader {
     private OracleConnection createConnection(String hostName) throws SQLException {
         final OracleDriver orcDriver = new OracleDriver();
         final Properties properties = new Properties();
-        properties.setProperty("user", "c##jong");
-        properties.setProperty("password", "guswhd12");
+        properties.setProperty("user", userName);
+        properties.setProperty("password", password);
 
         final OracleConnection conn = (OracleConnection) orcDriver.connect(hostName, properties);
 
