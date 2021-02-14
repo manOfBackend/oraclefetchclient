@@ -25,8 +25,6 @@ public class SingleCli implements Callable<Integer> {
     @ParentCommand
     private TransferCli transferCli;
 
-
-    @SuppressWarnings("rawtypes")
     @Override
     public Integer call() throws Exception {
 
@@ -51,6 +49,9 @@ public class SingleCli implements Callable<Integer> {
                 reader = new OracleReader(fetchSize, tableName, hostName, userName, password, queue);
                 writer = new CSVWriter("", queue);
             }
+            default -> {
+                return -1;
+            }
         }
 
         Thread readerThread = new Thread(reader);
@@ -68,6 +69,6 @@ public class SingleCli implements Callable<Integer> {
         long estimatedTime = System.currentTimeMillis() - startTime;
         System.out.println(estimatedTime / 1000.0);
 
-        return null;
+        return 0;
     }
 }
