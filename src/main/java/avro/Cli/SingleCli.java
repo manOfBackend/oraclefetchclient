@@ -1,8 +1,8 @@
-package Process;
+package avro.Cli;
 
 /*
     basic one to one process class
  */
-public class BasicProcess {
+public class SingleCli {
 
 }
