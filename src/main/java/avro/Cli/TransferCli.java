@@ -12,8 +12,8 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
 
-@Command(description = "Transfer", name = "transfer", mixinStandardHelpOptions = true, version = "transfer 1.0",
-        subcommands = {SingleCli.class, ParallelCli.class})
+@Command(description = "ADID Transfer", name = "transfer", mixinStandardHelpOptions = true, version = "transfer 1.0",
+        subcommands = {ParallelCli.class})
 public class TransferCli implements Callable<Integer> {
 
     @Option(names = {"-r", "--read-file-type"}, description = "Read File Type (CSV, PARQUET)", defaultValue = "CSV", required = true)
@@ -22,6 +22,8 @@ public class TransferCli implements Callable<Integer> {
     @Option(names = {"-w", "--write-file-type"}, description = "Write File Type (CSV, PARQUET)", defaultValue = "CSV", required = true)
     private FileType writeFileType;
 
+    @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
+    private int fetchSize;
 
     public static void main(String[] args) {
 
@@ -54,3 +56,4 @@ public class TransferCli implements Callable<Integer> {
         return null;
     }
 }
+
