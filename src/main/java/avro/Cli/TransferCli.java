@@ -1,10 +1,6 @@
 package avro.Cli;
 
 import Queue.FileType;
-import Queue.Impl.ParquetQueueManager;
-import Reader.Impl.OracleReader;
-import Writer.Impl.ParquetWriter;
-import avro.Impl.OracleTransformer;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -19,7 +15,7 @@ import static picocli.CommandLine.Option;
         subcommands = {SingleCli.class, ParallelCli.class})
 public class TransferCli implements Callable<Integer> {
 
-    @Option(names = {"-t", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
+    @Option(names = {"-type", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
     private FileType fileType;
 
     @Option(names = {"-o", "--output"}, defaultValue = "output_adid")
@@ -31,7 +27,7 @@ public class TransferCli implements Callable<Integer> {
     @Option(names = {"-t", "--table-name"}, required = true)
     private String tableName;
 
-    @Option(names = {"-h", "--host-name"}, required = true)
+    @Option(names = {"-host", "--host-name"}, required = true)
     private String hostName;
 
     @Option(names = {"-u", "--user-name"}, required = true)
@@ -56,6 +52,10 @@ public class TransferCli implements Callable<Integer> {
         return tableName;
     }
 
+    public String getOutputFileName() {
+        return outputFileName;
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -74,6 +74,7 @@ public class TransferCli implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        System.out.println("main cli");
         return null;
     }
 }

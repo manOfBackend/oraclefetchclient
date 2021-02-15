@@ -34,6 +34,9 @@ public class SingleCli implements Callable<Integer> {
         String tableName = transferCli.getTableName();
         String userName = transferCli.getUserName();
         String password = transferCli.getPassword();
+        String outputFileName = transferCli.getOutputFileName();
+
+        System.out.println("outputFileName = " + outputFileName);
 
         Reader reader = null;
         Writer writer = null;
@@ -42,12 +45,12 @@ public class SingleCli implements Callable<Integer> {
             case PARQUET -> {
                 ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
                 reader = new OracleReader(fetchSize, tableName, hostName, userName, password, queue);
-                writer = new ParquetWriter("", queue);
+                writer = new ParquetWriter(outputFileName, queue);
             }
             case CSV -> {
                 CSVQueueManager queue = new CSVQueueManager();
                 reader = new OracleReader(fetchSize, tableName, hostName, userName, password, queue);
-                writer = new CSVWriter("", queue);
+                writer = new CSVWriter(outputFileName, queue);
             }
             default -> {
                 return -1;

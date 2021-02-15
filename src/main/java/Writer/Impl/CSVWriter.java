@@ -33,6 +33,7 @@ public class CSVWriter extends Writer {
 
     private void flushAndClose(){
         try {
+            if (csvWriter == null) return;
             csvWriter.flush();
             csvWriter.close();
         } catch (IOException e) {
@@ -46,9 +47,9 @@ public class CSVWriter extends Writer {
         while(true) {
 
             try {
-                CSVQueueManager queueManager = new CSVQueueManager();
+                CSVQueueManager queue = (CSVQueueManager) queueManager;
 
-                Optional<List<String[]>> optionalList = queueManager.getList();
+                Optional<List<String[]>> optionalList = queue.getList();
 
                 if (optionalList.isEmpty()) {
                     break;

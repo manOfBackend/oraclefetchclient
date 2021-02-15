@@ -31,9 +31,7 @@ public class OracleReader extends Reader {
         properties.setProperty("user", userName);
         properties.setProperty("password", password);
 
-        final OracleConnection conn = (OracleConnection) orcDriver.connect(hostName, properties);
-
-        return conn;
+        return (OracleConnection) orcDriver.connect(hostName, properties);
     }
 
     @Override
@@ -46,15 +44,26 @@ public class OracleReader extends Reader {
 
         try {
             conn = createConnection(hostName);
+
+            if (conn == null) {
+                throw new SQLException("no connection");
+            }
+
             resultSet = createResultSet(conn, sql);
+
+            if (resultSet == null) {
+                throw new SQLException("no resultSet");
+            }
 
             queueManager.addAllFetchToQueue(resultSet);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } finally {
             try {
-                resultSet.close();
-                conn.close();
+                if (resultSet != null) {
+                    resultSet.close();
+                    conn.close();
+                }
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
