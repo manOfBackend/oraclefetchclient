@@ -22,6 +22,9 @@ public class TransferCli implements Callable<Integer> {
     @Option(names = {"-t", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
     private FileType fileType;
 
+    @Option(names = {"-o", "--output"}, defaultValue = "output_adid")
+    private String outputFileName;
+
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
 
