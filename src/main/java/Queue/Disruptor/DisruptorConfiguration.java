@@ -1,12 +1,11 @@
 package Queue.Disruptor;
 
-import Downloader.Writer.Disruptor.Impl.CSVWriter;
+import Downloader.Writer.Disruptor.Writer;
+import Queue.Disruptor.DisruptorProperties;
+import Queue.Disruptor.RowEvent;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.lmax.disruptor.dsl.ProducerType;
-import com.lmax.disruptor.util.DaemonThreadFactory;
 
 public class DisruptorConfiguration {
     private DisruptorProperties disruptorProperties;
@@ -25,18 +24,20 @@ public class DisruptorConfiguration {
         return rowEventEventFactory;
     }
 
-    public RingBuffer<RowEvent<?>> ringBuffer(EventFactory<RowEvent<?>> eventFactory, WaitStrategy waitStrategy) {
-        Disruptor<RowEvent<?>> disruptor = null;
-
-        disruptor = new Disruptor<>(
+    public RingBuffer<RowEvent<?>> ringBuffer(Writer eventHandler) {
+        Disruptor<RowEvent<?>> disruptor = new Disruptor<>(
                 rowEventFactory(),
                 disruptorProperties.getRingBufferSize(),
-                DaemonThreadFactory.INSTANCE,
-                ProducerType.SINGLE,
+                disruptorProperties.getThreadFactory(),
+                disruptorProperties.getProducerType(),
                 disruptorProperties.getWaitStartegy()
         );
 
-        return null;
-    }
+        disruptor.handleEventsWith(eventHandler);
 
+        RingBuffer<RowEvent<?>> ringBuffer = disruptor.getRingBuffer();
+        disruptor.start();
+
+        return ringBuffer;
+    }
 }
