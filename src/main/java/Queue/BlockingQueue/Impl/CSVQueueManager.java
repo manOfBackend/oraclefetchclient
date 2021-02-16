@@ -1,8 +1,6 @@
-package Queue.Impl;
+package Queue.BlockingQueue.Impl;
 
-import Queue.QueueManager;
-import oracle.jdbc.OracleResultSet;
-import org.apache.avro.generic.GenericData;
+import Queue.BlockingQueue.QueueManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

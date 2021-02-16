@@ -1,4 +1,4 @@
-package Queue;
+package Queue.BlockingQueue;
 
 public enum FileType {
     CSV("CSV"),

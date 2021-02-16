@@ -1,13 +1,13 @@
 package avro.Cli;
 
-import Queue.FileType;
-import Queue.Impl.CSVQueueManager;
-import Queue.Impl.ParquetQueueManager;
-import Reader.Impl.OracleReader;
-import Reader.Reader;
-import Writer.Impl.CSVWriter;
-import Writer.Impl.ParquetWriter;
-import Writer.Writer;
+import Queue.BlockingQueue.FileType;
+import Queue.BlockingQueue.Impl.CSVQueueManager;
+import Queue.BlockingQueue.Impl.ParquetQueueManager;
+import Downloader.Reader.Impl.OracleReader;
+import Downloader.Reader.Reader;
+import Downloader.Writer.Impl.CSVWriter;
+import Downloader.Writer.Impl.ParquetWriter;
+import Downloader.Writer.Writer;
 import avro.Impl.OracleTransformer;
 
 import java.util.concurrent.Callable;
@@ -36,6 +36,7 @@ public class SingleCli implements Callable<Integer> {
         String password = transferCli.getPassword();
         String outputFileName = transferCli.getOutputFileName();
 
+        System.out.println("fetchSize = " + fetchSize);
         System.out.println("outputFileName = " + outputFileName);
 
         Reader reader = null;
@@ -68,7 +69,10 @@ public class SingleCli implements Callable<Integer> {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println("reader 종료");
+        //writerThread.join();
         writerThread.interrupt();
+        writerThread.join();
         long estimatedTime = System.currentTimeMillis() - startTime;
         System.out.println(estimatedTime / 1000.0);
 

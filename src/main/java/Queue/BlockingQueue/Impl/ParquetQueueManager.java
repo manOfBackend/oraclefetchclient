@@ -1,6 +1,6 @@
-package Queue.Impl;
+package Queue.BlockingQueue.Impl;
 
-import Queue.QueueManager;
+import Queue.BlockingQueue.QueueManager;
 import avro.ResultSetTransformer;
 import avro.Schema.SchemaGenerator;
 import avro.Schema.SchemaResults;
@@ -29,6 +29,10 @@ public class ParquetQueueManager extends QueueManager<GenericRecord> {
         return schemaResults;
     }
 
+    public SchemaGenerator getGenerator() {
+        return generator;
+    }
+
     public ParquetQueueManager(ResultSetTransformer transformer, String schemaName, String namespace) {
         this.transformer = transformer;
         this.schemaName = schemaName;
@@ -43,17 +47,18 @@ public class ParquetQueueManager extends QueueManager<GenericRecord> {
         GenericRecordBuilder builder = new GenericRecordBuilder(schemaResults.getParsedSchema());
         List<GenericRecord> list = new ArrayList<>();
 
+        System.out.println("FetchSize: " + resultSet.getFetchSize());
         while (resultSet.next()) {
-
             for (SchemaSqlMapping mapping : schemaResults.getMappings()) {
+
 
                 builder.set(schemaResults.getParsedSchema().getField(mapping.getSchemaName()),
                         transformer.extract(mapping, resultSet));
             }
 
             GenericRecord record = builder.build();
-
             list.add(record);
+
             if (list.size() == resultSet.getFetchSize()) {
                 addList(new ArrayList<>(list));
                 list.clear();

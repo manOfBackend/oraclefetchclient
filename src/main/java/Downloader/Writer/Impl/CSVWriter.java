@@ -1,8 +1,7 @@
-package Writer.Impl;
+package Downloader.Writer.Impl;
 
-import Queue.Impl.CSVQueueManager;
-import Queue.QueueManager;
-import Writer.Writer;
+import Downloader.Writer.Writer;
+import Queue.BlockingQueue.Impl.CSVQueueManager;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,7 +30,7 @@ public class CSVWriter extends Writer {
         }
     }
 
-    private void flushAndClose(){
+    private void flushAndClose() {
         try {
             if (csvWriter == null) return;
             csvWriter.flush();
@@ -44,24 +43,19 @@ public class CSVWriter extends Writer {
     @Override
     public void run() {
 
-        while(true) {
+        CSVQueueManager queue = (CSVQueueManager) queueManager;
+        while (true) {
 
-            try {
-                CSVQueueManager queue = (CSVQueueManager) queueManager;
+            Optional<List<String[]>> optionalList = queue.getList();
 
-                Optional<List<String[]>> optionalList = queue.getList();
-
-                if (optionalList.isEmpty()) {
-                    break;
-                }
-
-                List<String[]> list = optionalList.get();
-
-                for (String[] line : list) {
-                    csvWriter.writeNext(line);
-                }
-            } catch (InterruptedException e) {
+            if (optionalList.isEmpty()) {
                 break;
+            }
+
+            List<String[]> list = optionalList.get();
+
+            for (String[] line : list) {
+                csvWriter.writeNext(line);
             }
         }
 

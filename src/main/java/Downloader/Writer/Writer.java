@@ -1,6 +1,6 @@
-package Writer;
+package Downloader.Writer;
 
-import Queue.QueueManager;
+import Queue.BlockingQueue.QueueManager;
 
 public abstract class Writer implements Runnable {
 
@@ -15,6 +15,10 @@ public abstract class Writer implements Runnable {
     }
 
     protected final QueueManager<?> queueManager;
+
+    public QueueManager<?> getQueueManager() {
+        return queueManager;
+    }
 
     public Writer(String outputPath, QueueManager<?> queueManager) {
         this.outputPath = outputPath;

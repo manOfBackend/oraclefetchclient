@@ -16,6 +16,11 @@ public class ParallelCli implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        return null;
+        //TODO: MULTI THREADING LOGIC
+
+        System.out.println("parallel");
+        System.out.println(transferCli.getHostName());
+        System.out.println("Threads: " + threadCount);
+        return 0;
     }
 }

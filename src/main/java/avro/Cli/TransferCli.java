@@ -1,6 +1,6 @@
 package avro.Cli;
 
-import Queue.FileType;
+import Queue.BlockingQueue.FileType;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -9,10 +9,15 @@ import static picocli.CommandLine.Command;
 import static picocli.CommandLine.Option;
 
 /**
- * one to one thread
+ * main cli
  */
 @Command(description = "ADID Transfer", name = "transfer", mixinStandardHelpOptions = true, version = "transfer 1.0",
-        subcommands = {SingleCli.class, ParallelCli.class})
+        subcommands =
+                {
+                        SingleCli.class,
+                        ParallelCli.class,
+                        uploadCli.class
+                })
 public class TransferCli implements Callable<Integer> {
 
     @Option(names = {"-type", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
