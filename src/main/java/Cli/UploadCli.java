@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 import static picocli.CommandLine.*;
 
 @Command(name = "upload")
-public class uploadCli implements Callable<Integer> {
+public class UploadCli implements Callable<Integer> {
     @Option(names = {"-c", "--create-sql-file-name"}, required = true)
     private String createSqlFileName;
 

@@ -1,6 +1,7 @@
 package Cli;
 
 import Downloader.Reader.Impl.HiveReader;
+import Downloader.Reader.ReaderType;
 import Downloader.Writer.FileType;
 import Queue.BlockingQueue.Impl.CSVQueueManager;
 import Queue.BlockingQueue.Impl.ParquetQueueManager;
@@ -39,6 +40,9 @@ public class SingleCli implements Callable<Integer> {
     @Option(names = {"-type", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
     private FileType fileType;
 
+    @Option(names = {"-reader", "--reader-type"}, description = "Reader Type (HIVE, ORACLE)", required = true)
+    private ReaderType readerType;
+
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
 
@@ -53,7 +57,6 @@ public class SingleCli implements Callable<Integer> {
 
     @Option(names = {"-p", "--password"}, required = true)
     private String password;
-
 
     @Override
     public Integer call() throws Exception {
