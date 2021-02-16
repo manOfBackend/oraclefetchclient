@@ -7,7 +7,7 @@ import com.lmax.disruptor.RingBuffer;
 public class CSVRowEventProducer {
     private final RingBuffer<RowEvent<String[]>> ringBuffer;
 
-    public CSVRowEventProducer(RingBuffer<RowEvent<String[]>> ringBuffer) {
+    public CSVRowEventProducer(RingBuffer ringBuffer) {
         this.ringBuffer = ringBuffer;
     }
 

@@ -14,7 +14,7 @@ public class DisruptorConfiguration {
         this.disruptorProperties = disruptorProperties;
     }
 
-    public EventFactory<RowEvent<?>> rowEventFactory() {
+    private EventFactory<RowEvent<?>> rowEventFactory() {
         EventFactory<RowEvent<?>> rowEventEventFactory = new EventFactory<RowEvent<?>>() {
             @Override
             public RowEvent<?> newInstance() {
@@ -24,7 +24,7 @@ public class DisruptorConfiguration {
         return rowEventEventFactory;
     }
 
-    public RingBuffer<RowEvent<?>> ringBuffer(Writer eventHandler) {
+    public RingBuffer<RowEvent<?>> run(Writer eventHandler) {
         Disruptor<RowEvent<?>> disruptor = new Disruptor<>(
                 rowEventFactory(),
                 disruptorProperties.getRingBufferSize(),

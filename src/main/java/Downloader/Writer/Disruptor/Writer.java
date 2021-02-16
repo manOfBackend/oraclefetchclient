@@ -14,15 +14,8 @@ public abstract class Writer<T> implements EventHandler<RowEvent<T>> {
         this.outputPath = outputPath;
     }
 
-    protected final RowEvent<T> rowEvent;
-    public RowEvent<T> getRowEvent() {
-        return rowEvent;
-    }
 
-
-    public Writer(String outputPath, RowEvent<T> rowEvent) {
+    public Writer(String outputPath) {
         this.outputPath = outputPath;
-        this.rowEvent = rowEvent;
-
     }
 }

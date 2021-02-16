@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 public class CSVWriter extends Writer<String[]> {
     private com.opencsv.CSVWriter csvWriter;
 
-    public CSVWriter(String outputPath, RowEvent rowEvent) {
-        super(outputPath, rowEvent);
+    public CSVWriter(String outputPath) {
+        super(outputPath);
         Path path = Paths.get(outputPath);
 
         try {
