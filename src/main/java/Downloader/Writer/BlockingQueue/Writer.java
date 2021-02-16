@@ -1,4 +1,4 @@
-package Downloader.Writer;
+package Downloader.Writer.BlockingQueue;
 
 import Queue.BlockingQueue.QueueManager;
 

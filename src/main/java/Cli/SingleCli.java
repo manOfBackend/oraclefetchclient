@@ -1,13 +1,15 @@
 package Cli;
 
+import Downloader.Writer.BlockingQueue.CSVWriter;
+import Downloader.Writer.BlockingQueue.ParquetWriter;
 import Queue.BlockingQueue.FileType;
 import Queue.BlockingQueue.Impl.CSVQueueManager;
 import Queue.BlockingQueue.Impl.ParquetQueueManager;
 import Downloader.Reader.Impl.OracleReader;
 import Downloader.Reader.Reader;
-import Downloader.Writer.Impl.CSVWriter;
-import Downloader.Writer.Impl.ParquetWriter;
-import Downloader.Writer.Writer;
+import Downloader.Writer.BlockingQueue.Impl.CSVWriter;
+import Downloader.Writer.BlockingQueue.Impl.ParquetWriter;
+import Downloader.Writer.BlockingQueue.Writer;
 import avro.Impl.OracleTransformer;
 
 import java.util.concurrent.Callable;

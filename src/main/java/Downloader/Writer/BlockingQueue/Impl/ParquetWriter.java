@@ -1,6 +1,6 @@
-package Downloader.Writer.Impl;
+package Downloader.Writer.BlockingQueue.Impl;
 
-import Downloader.Writer.Writer;
+import Downloader.Writer.BlockingQueue.Writer;
 import Queue.BlockingQueue.Impl.ParquetQueueManager;
 import avro.Schema.SchemaResults;
 import org.apache.avro.generic.GenericRecord;
