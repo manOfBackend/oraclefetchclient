@@ -79,6 +79,8 @@ public class SingleCli implements Callable<Integer> {
                 RingBuffer<RowEvent<?>> ringBuffer = disruptor.run(writer1);
                 CSVRowEventProducer csvRowEventProducer = new CSVRowEventProducer(ringBuffer);
 
+                /** producer.onData(x) 하면 x가 ringBuffer에 추가되고, 콜백함수로 Write 됨 **/
+                //csvRowEventProducer.onData(rowData);
             }
             default -> {
                 return -1;
