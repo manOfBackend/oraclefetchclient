@@ -1,7 +1,5 @@
 package Cli;
 
-import Downloader.Writer.BlockingQueue.CSVWriter;
-import Downloader.Writer.BlockingQueue.ParquetWriter;
 import Queue.BlockingQueue.FileType;
 import Queue.BlockingQueue.Impl.CSVQueueManager;
 import Queue.BlockingQueue.Impl.ParquetQueueManager;
