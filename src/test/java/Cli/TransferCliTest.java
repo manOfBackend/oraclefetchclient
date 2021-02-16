@@ -1,4 +1,4 @@
-package avro.Cli;
+package Cli;
 
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;

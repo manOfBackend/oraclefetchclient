@@ -1,4 +1,4 @@
-package avro.Cli;
+package Cli;
 
 import java.util.concurrent.Callable;
 

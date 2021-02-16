@@ -1,6 +1,4 @@
-package avro.Cli;
-
-import picocli.CommandLine;
+package Cli;
 
 import java.util.concurrent.Callable;
 

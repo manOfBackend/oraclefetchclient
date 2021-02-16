@@ -1,4 +1,4 @@
-package avro.Cli;
+package Cli;
 
 import Queue.BlockingQueue.FileType;
 import Queue.BlockingQueue.Impl.CSVQueueManager;
