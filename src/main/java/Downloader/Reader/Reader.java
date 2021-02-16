@@ -41,37 +41,18 @@ public abstract class Reader implements Runnable {
         final String sql = "SELECT * FROM " + tableName;
         System.out.println("Running: " + sql);
 
-        Connection conn = null;
-        ResultSet resultSet = null;
-
-        try {
-            conn = createConnection(hostName);
-
+        try (Connection conn = createConnection(hostName);
+             ResultSet resultSet = createResultSet(conn, sql, fetchSize)) {
             if (conn == null) {
                 throw new SQLException("no connection");
             }
-
-            resultSet = createResultSet(conn, sql, fetchSize);
-
             if (resultSet == null) {
                 throw new SQLException("no resultSet");
             }
-
             queueManager.addAllFetchToQueue(resultSet);
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                    conn.close();
-                }
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
         }
+
     }
-
-
-
 }

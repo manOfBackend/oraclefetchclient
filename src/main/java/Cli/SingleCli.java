@@ -78,23 +78,23 @@ public class SingleCli implements Callable<Integer> {
                 writer = new CSVWriter(outputFileName, queue);
             }
 
-            case DISRUPTOR_CSV -> {
-                int ringBufferSize = 1024;
-                WaitStrategy waitStrategy = new SleepingWaitStrategy();
-
-                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
-                DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
-
-                RowEvent<String[]> rowEvent;
-                reader = new HiveReader(fetchSize, tableName, hostName, userName, password);
-                Downloader.Writer.Disruptor.Writer writer1 = new Downloader.Writer.Disruptor.Impl.CSVWriter(outputFileName);
-
-                RingBuffer<RowEvent<?>> ringBuffer = disruptor.run(writer1);
-                CSVRowEventProducer csvRowEventProducer = new CSVRowEventProducer(ringBuffer);
-
-                /** producer.onData(x) 하면 x가 ringBuffer에 추가되고, 콜백함수로 Write 됨 **/
-                //csvRowEventProducer.onData(rowData);
-            }
+//            case DISRUPTOR_CSV -> {
+//                int ringBufferSize = 1024;
+//                WaitStrategy waitStrategy = new SleepingWaitStrategy();
+//
+//                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
+//                DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
+//
+//                RowEvent<String[]> rowEvent;
+//                reader = new HiveReader(fetchSize, tableName, hostName, userName, password);
+//                Downloader.Writer.Disruptor.Writer writer1 = new Downloader.Writer.Disruptor.Impl.CSVWriter(outputFileName);
+//
+//                RingBuffer<RowEvent<?>> ringBuffer = disruptor.run(writer1);
+//                CSVRowEventProducer csvRowEventProducer = new CSVRowEventProducer(ringBuffer);
+//
+//                /** producer.onData(x) 하면 x가 ringBuffer에 추가되고, 콜백함수로 Write 됨 **/
+//                //csvRowEventProducer.onData(rowData);
+//            }
             default -> {
                 return -1;
             }
