@@ -19,7 +19,6 @@ public class ParallelCli implements Callable<Integer> {
         //TODO: MULTI THREADING LOGIC
 
         System.out.println("parallel");
-        System.out.println(transferCli.getHostName());
         System.out.println("Threads: " + threadCount);
         return 0;
     }
