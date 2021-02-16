@@ -23,6 +23,8 @@ public class OracleUploader implements Runnable {
 
     private final String insertSql;
 
+    private final String createSql;
+
     private final String hostName;
 
     private final String userName;
@@ -31,15 +33,13 @@ public class OracleUploader implements Runnable {
 
     private final String inputFileName;
 
-    private final int fetchSize;
-
-    public OracleUploader(String insertSql, String hostName, String inputFileName, String userName, String password, int fetchSize) {
+    public OracleUploader(String createSql, String insertSql, String hostName, String inputFileName, String userName, String password) {
+        this.createSql = createSql;
         this.insertSql = insertSql;
         this.hostName = hostName;
         this.userName = userName;
         this.password = password;
         this.inputFileName = inputFileName;
-        this.fetchSize = fetchSize;
 
     }
 
