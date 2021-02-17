@@ -66,7 +66,7 @@ public class ParallelCli implements Callable<Integer> {
                 limit = totalRowsCount;
             }
             futureList.add(CompletableFuture.runAsync(
-                    new OracleParallelWorker(executeSql, offset, limit,
+                    new OracleParallelWorker(executeSql, offset, chunkSize,
                             new OracleManager(hostName, userName, password)), executorService)
             );
             offset += chunkSize;
