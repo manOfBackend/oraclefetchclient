@@ -60,8 +60,8 @@ public class OracleManager {
         return preparedStatement.executeQuery();
     }
 
-    public int getTotalRowsCount(String tableName) throws SQLException {
-        String sql = String.format("SELECT count(*) AS TOTAL FROM %s", tableName);
+    public int getTotalRowsCount(String executeSql) throws SQLException {
+        String sql = String.format("SELECT count(*) AS TOTAL FROM (%s)", executeSql);
         final PreparedStatement preparedStatement = createOraclePreparedStatement(sql);
         final ResultSet resultSet = preparedStatement.executeQuery();
         return resultSet.getInt("TOTAL");
