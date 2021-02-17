@@ -3,7 +3,7 @@ package Downloader.Writer.Disruptor;
 import Queue.Disruptor.ResultSetEvent;
 import com.lmax.disruptor.EventHandler;
 
-public abstract class Writer<T> implements EventHandler<ResultSetEvent> {
+public abstract class Writer implements EventHandler<ResultSetEvent> {
     protected String outputPath = "output.csv";
     public String getOutputPath() {
         return outputPath;

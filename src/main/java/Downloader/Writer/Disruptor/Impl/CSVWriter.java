@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
 
-public class CSVWriter extends Writer<ResultSet> {
+public class CSVWriter extends Writer {
     private com.opencsv.CSVWriter csvWriter;
 
     public CSVWriter(String outputPath) {
@@ -42,6 +42,9 @@ public class CSVWriter extends Writer<ResultSet> {
     @Override
     public void onEvent(ResultSetEvent resultSetEvent, long sequence, boolean endOfBatch) throws Exception {
         ResultSet resultSet = resultSetEvent.getResultSet();
-//        csvWriter.writeNext();
+        while (resultSet.next()) {
+
+//        csvWriter.writeNext()
+        };
     }
 }
