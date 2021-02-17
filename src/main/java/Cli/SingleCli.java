@@ -1,7 +1,8 @@
 package Cli;
 
-import Downloader.Reader.BlockingQueue.Reader;
 import Downloader.Reader.BlockingQueue.Impl.OracleReader;
+import Downloader.Reader.BlockingQueue.Reader;
+import Downloader.Reader.Disruptor.Impl.HiveReader;
 import Downloader.Reader.ReaderType;
 import Downloader.Writer.BlockingQueue.Impl.CSVWriter;
 import Downloader.Writer.BlockingQueue.Impl.ParquetWriter;
@@ -9,7 +10,16 @@ import Downloader.Writer.BlockingQueue.Writer;
 import Downloader.Writer.FileType;
 import Queue.BlockingQueue.Impl.CSVQueueManager;
 import Queue.BlockingQueue.Impl.ParquetQueueManager;
+import Queue.Disruptor.DisruptorConfiguration;
+import Queue.Disruptor.DisruptorProperties;
+import Queue.Disruptor.ResultSetEvent;
+import Queue.Disruptor.ResultSetEventProducer;
 import avro.Impl.OracleTransformer;
+import com.lmax.disruptor.BlockingWaitStrategy;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.WaitStrategy;
+import com.lmax.disruptor.dsl.ProducerType;
+import com.lmax.disruptor.util.DaemonThreadFactory;
 
 import java.util.concurrent.Callable;
 
@@ -70,23 +80,24 @@ public class SingleCli implements Callable<Integer> {
                 writer = new CSVWriter(outputFileName, queue);
             }
 
-//            case DISRUPTOR_CSV -> {
-//                int ringBufferSize = 1024;
-//                WaitStrategy waitStrategy = new SleepingWaitStrategy();
-//
-//                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
-//                DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
-//
-//                ResultSetEvent<String[]> rowEvent;
-//                reader = new HiveReader(fetchSize, tableName, hostName, userName, password);
-//                Downloader.Writer.Disruptor.Writer writer1 = new Downloader.Writer.Disruptor.Impl.CSVWriter(outputFileName);
-//
-//                RingBuffer<ResultSetEvent<?>> ringBuffer = disruptor.run(writer1);
-//                CSVRowEventProducer csvRowEventProducer = new CSVRowEventProducer(ringBuffer);
-//
-//                /** producer.onData(x) 하면 x가 ringBuffer에 추가되고, 콜백함수로 Write 됨 **/
-//                //csvRowEventProducer.onData(rowData);
-//            }
+            case DISRUPTOR_CSV -> {
+                /** 프로퍼티 옵션으로 조정하도록 변경 (디폴트는 현재) **/
+                int ringBufferSize = 1024;
+                WaitStrategy waitStrategy = new BlockingWaitStrategy();
+                /**********************************************/
+
+                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
+                DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
+
+                Downloader.Writer.Disruptor.Writer writer1 = new Downloader.Writer.Disruptor.Impl.CSVWriter(outputFileName);
+
+                RingBuffer<ResultSetEvent> ringBuffer = disruptor.run(writer1);
+                ResultSetEventProducer resultSetEventProducer = new ResultSetEventProducer(ringBuffer);
+
+                Downloader.Reader.Disruptor.Reader reader1 = new HiveReader(fetchSize, tableName, hostName, userName, password, resultSetEventProducer);
+
+                /** readerThread만 start()하면 Write은 Disruptor에서 콜백함수로 알아서 작동됨 **/
+            }
             default -> {
                 return -1;
             }

@@ -2,7 +2,8 @@ package Downloader.Writer;
 
 public enum FileType {
     CSV("CSV"),
-    PARQUET("PARQUET");
+    PARQUET("PARQUET"),
+    DISRUPTOR_CSV("DISRUPTOR_CSV");
 
     private final String value;
 
