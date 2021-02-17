@@ -55,8 +55,9 @@ public class OracleManager {
         return connection.prepareStatement(sql);
     }
 
-    public ResultSet getResultSet(String sql) throws SQLException {
+    public ResultSet getResultSet(String sql, int fetchSize) throws SQLException {
         final PreparedStatement preparedStatement = createOraclePreparedStatement(sql);
+        preparedStatement.setFetchSize(fetchSize);
         return preparedStatement.executeQuery();
     }
 

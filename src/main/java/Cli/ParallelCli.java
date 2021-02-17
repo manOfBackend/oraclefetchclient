@@ -2,7 +2,6 @@ package Cli;
 
 import DbManager.Oracle.OracleManager;
 import Downloader.Reader.BlockingQueue.Impl.OracleParallelReader;
-import Downloader.Reader.BlockingQueue.Impl.OracleReader;
 import Downloader.Reader.BlockingQueue.Reader;
 import Downloader.Writer.BlockingQueue.Impl.CSVWriter;
 import Downloader.Writer.BlockingQueue.Impl.ParquetWriter;
@@ -12,9 +11,14 @@ import Queue.BlockingQueue.Impl.CSVQueueManager;
 import Queue.BlockingQueue.Impl.ParquetQueueManager;
 import avro.Impl.OracleTransformer;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static picocli.CommandLine.*;
 
@@ -33,8 +37,8 @@ public class ParallelCli implements Callable<Integer> {
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
 
-    @Option(names = {"-sql", "--execute-sql"}, defaultValue = "select * from adid_test")
-    private String executeSql;
+    @Option(names = {"-sql", "--execute-sql"}, required = true)
+    private File executeSqlFile;
 
     @Option(names = {"-host", "--host-name"}, required = true)
     private String hostName;
@@ -49,6 +53,9 @@ public class ParallelCli implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         //TODO: MULTI THREADING LOGIC
+        // 싱글과 합쳐도 좋을 듯
+
+        String executeSql = Files.readString(executeSqlFile.toPath());
 
         System.out.println("parallel");
         System.out.println("Threads: " + threadCount);
@@ -59,14 +66,16 @@ public class ParallelCli implements Callable<Integer> {
 
         final int totalRowsCount = manager.getTotalRowsCount(executeSql);
 
-        final ExecutorService executorService = Executors.newFixedThreadPool(threadCount * 2);
+        final ExecutorService readerPool = Executors.newFixedThreadPool(threadCount);
+        final ExecutorService writerPool = Executors.newFixedThreadPool(threadCount);
 
         int offset = 0;
         final int chunkSize = (int) Math.ceil((double) totalRowsCount / threadCount);
         System.out.println("TotalRows: " + totalRowsCount);
         System.out.println("chunkSize: " + chunkSize);
 
-        List<CompletableFuture<Void>> futureList = new ArrayList<>();
+        List<CompletableFuture<Void>> readerList = new ArrayList<>();
+        List<CompletableFuture<Void>> writerList = new ArrayList<>();
 
         for (int i = 0; i < threadCount; i++) {
 
@@ -92,19 +101,21 @@ public class ParallelCli implements Callable<Integer> {
                 }
             }
 
-            futureList.add(CompletableFuture.runAsync(reader, executorService));
-            futureList.add(CompletableFuture.runAsync(writer, executorService));
+            readerList.add(CompletableFuture.runAsync(reader, readerPool));
+            writerList.add(CompletableFuture.runAsync(writer, writerPool));
             offset += chunkSize;
         }
 
-        final CompletableFuture<Void> all = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
-            System.out.println("완료");
-        }, executorService);
+        final CompletableFuture<Void> readerAll = CompletableFuture.allOf(readerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
+            System.out.println("reader 완료");
+        });
+        final CompletableFuture<Void> writerAll = CompletableFuture.allOf(writerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
+            System.out.println("writer 완료");
+        });
 
-        System.out.println("시작");
-        all.get();
+        readerAll.join();
+        writerAll.cancel(true);
 
-        executorService.shutdown();
 
         return 0;
     }

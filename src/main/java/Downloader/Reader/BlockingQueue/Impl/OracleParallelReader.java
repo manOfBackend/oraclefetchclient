@@ -49,7 +49,7 @@ public class OracleParallelReader extends Reader {
     public ResultSet createResultSet(Connection conn, String sql, int fetchSize) throws SQLException {
         String formattedSql = String.format(rowsFetchSqlFormat, sql, offset, limit);
         System.out.println("formattedSql: " + formattedSql);
-        return oracleManager.getResultSet(formattedSql);
+        return oracleManager.getResultSet(formattedSql, fetchSize);
     }
 
     @Override
