@@ -1,6 +1,5 @@
 package Downloader.Reader.Disruptor;
 
-import Queue.BlockingQueue.QueueManager;
 import Queue.Disruptor.RowEventProducer;
 
 import java.sql.Connection;
