@@ -31,10 +31,10 @@ public class lftpCli implements Callable<Integer> {
         String dst = "/home/fasoo/sftp_dir";
      */
     @Option(names = {"-s", "--src"}, required = true)
-    private File srcFile;
+    private String srcFileName;
 
     @Option(names = {"-d", "--dst"}, required = true)
-    private File dst;
+    private String dstFileName;
 
     @Option(names = {"-c", "--thread-count"}, required = true)
     private int threadCount;
@@ -46,8 +46,8 @@ public class lftpCli implements Callable<Integer> {
 
     }
 
-    private Path createFile(String ext) throws IOException {
-        Path path = Paths.get("download" + "." + ext);
+    private Path createFile() throws IOException {
+        Path path = Path.of(dstFileName);
         if (Files.exists(path)) {
             Files.delete(path);
         }
@@ -94,20 +94,20 @@ public class lftpCli implements Callable<Integer> {
         JS1.putEmptyFile();
 
         //get size of src file
-        long size = srcFile.length();
+        long size = srcFileName.length();
 
         //set length remote file
-        JS1.setLength(size, "/home/fasoo/sftp_dir/upload.txt");
+        JS1.setLength(size, dstFileName);
 
         //get sections of src file
         List<FileChunk> list = new ArrayList<>();
-        list = JS1.makeFileChunk1(num, srcFile);
+        list = JS1.makeFileChunk1(num, srcFileName);
 
         //Making Threads
         ExecutorService service = Executors.newFixedThreadPool(num);
         List<CompletableFuture> futureList = new ArrayList<>();
         for (int i = 0; i < num; ++i) {
-            futureList.add(CompletableFuture.runAsync(new UploadThread(i, list.get(i).getOffset(), list.get(i).getLimit(), srcFile.toPath()), service));
+            futureList.add(CompletableFuture.runAsync(new UploadThread(i, list.get(i).getOffset(), list.get(i).getLimit(), Path.of(srcFileName)), service));
         }
         CompletableFuture<Void> futureAll = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRun(() -> {
             System.out.println("finish");
@@ -147,16 +147,7 @@ public class lftpCli implements Callable<Integer> {
 
         try {
             switch (transType) {
-                case "download", "down" -> {
-                    List<FileChunk> fileChunkList = new ArrayList<>();
-                    fileChunkList = JS1.makeFileChunk(threadCount);
-                    PrintFileChunks(threadCount, fileChunkList);
-                    long size = JS1.getSize();
-                    String ext = JS1.getExtend();
-                    Path file = createFile(ext);
-                    FileSizeAllocate(size, file);
-                    MakingThreads(JS1, threadCount, fileChunkList, file);
-                }
+                case "download", "down" -> download(JS1);
                 case "upload" -> upload(JS1);
                 case "up" -> up(JS1, threadCount);
             }
@@ -165,5 +156,14 @@ public class lftpCli implements Callable<Integer> {
         }
 
         return 0;
+    }
+
+    private void download(JSFTP_UpDown JS1) throws IOException, JSchException, SftpException {
+        List<FileChunk> fileChunkList = new ArrayList<>();
+        fileChunkList = JS1.makeFileChunk(threadCount, srcFileName);
+        PrintFileChunks(threadCount, fileChunkList);
+        Path file = createFile();
+        FileSizeAllocate(JS1.getSize(srcFileName), file);
+        MakingThreads(JS1, threadCount, fileChunkList, file);
     }
 }

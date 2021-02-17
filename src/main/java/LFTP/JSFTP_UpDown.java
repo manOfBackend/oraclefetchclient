@@ -42,18 +42,11 @@ public class JSFTP_UpDown {
     }
 
     //get size of target file
-    public long getSize() throws JSchException, SftpException, IOException {
+    public long getSize(String srcFileName) throws JSchException, SftpException, IOException {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
-        BufferedReader reader;
-        reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("config.txt"))));
-        String line = null;
-        for (int i = 0; i < 4; ++i) {
-            line = reader.readLine();
-        }
-        String src = line;
-        reader.close();
-        long size = channelSftp.stat(src).getSize();
+
+        long size = channelSftp.stat(srcFileName).getSize();
         channelSftp.quit();
         return size;
     }
@@ -72,30 +65,19 @@ public class JSFTP_UpDown {
     }
 
     //get sections of remote file
-    public List<FileChunk> makeFileChunk(int num) throws IOException, JSchException, SftpException {
+    public List<FileChunk> makeFileChunk(int num, String srcFileName) throws IOException, JSchException, SftpException {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
-        int th_count = num;
 
-        BufferedReader reader;
-        reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("config.txt"))));
-        String line = null;
-        for (int i = 0; i < 4; ++i) {
-            line = reader.readLine();
-        }
-        String src = line;
-        reader.close();
-
-        long size = channelSftp.stat(src).getSize();
-
+        long size = channelSftp.stat(srcFileName).getSize();
         List<FileChunk> list = new ArrayList<>();
         long offset = 0;
         long limit = 0;
-        long interval = (long) Math.ceil(size / th_count);
+        long interval = (long) Math.ceil(size / num);
 
-        for (int i = 0; i < th_count; i++) {
+        for (int i = 0; i < num; i++) {
             limit += interval;
-            if (i == th_count - 1) {
+            if (i == num - 1) {
                 list.add(new FileChunk(offset, size));
             } else {
                 list.add(new FileChunk(offset, limit));
@@ -157,9 +139,12 @@ public class JSFTP_UpDown {
     }
 
     //get sections of local src file
-    public List<FileChunk> makeFileChunk1(int threadCount, File srcFile) {
+    public List<FileChunk> makeFileChunk1(int threadCount, String srcFileName) {
 
-        long size = srcFile.length();
+        //long size = srcFile.length();
+
+        File file = new File(srcFileName);
+        long size = file.length();
 
         List<FileChunk> list = new ArrayList<>();
         long offset = 0;
