@@ -11,7 +11,7 @@ public abstract class Reader implements Runnable {
     // 쿼리당 가져오는 Row 수
     protected int fetchSize = 10;
 
-    protected final String tableName;
+    protected final String sql;
 
     // DB 접속 URL
     protected final String hostName;
@@ -23,14 +23,18 @@ public abstract class Reader implements Runnable {
     protected final QueueManager<?> queueManager;
 
 
-    public Reader(int fetchSize, String tableName, String hostName, String userName, String password, QueueManager<?> queueManager) {
+    public Reader(int fetchSize, String sql, String hostName, String userName, String password, QueueManager<?> queueManager) {
         this.fetchSize = fetchSize;
-        this.tableName = tableName;
+        this.sql = sql;
         this.hostName = hostName;
         this.userName = userName;
         this.password = password;
         this.queueManager = queueManager;
     }
+    public String getSql() {
+        return sql;
+    }
+
 
     public abstract ResultSet createResultSet(Connection conn, String sql, int fetchSize) throws SQLException;
 
@@ -38,7 +42,6 @@ public abstract class Reader implements Runnable {
 
     @Override
     public void run() {
-        final String sql = "SELECT * FROM " + tableName;
         System.out.println("Running: " + sql);
 
         try (Connection conn = createConnection(hostName);
