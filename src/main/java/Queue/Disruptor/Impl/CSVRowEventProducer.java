@@ -15,7 +15,7 @@ public class CSVRowEventProducer {
             new EventTranslatorOneArg<RowEvent<String[]>, String[]>() {
                 @Override
                 public void translateTo(RowEvent rowEvent, long l, String[] strings) {
-                    rowEvent.setRow(strings);
+                    rowEvent.setResultSet(strings);
                 }
             };
 

@@ -1,18 +1,18 @@
 package Queue.Disruptor;
 
 public class RowEvent<T> {
-    private T row;
+    private T resultSet;
 
     public RowEvent(){}
-    public RowEvent(T row) {
-        this.row = row;
+    public RowEvent(T resultSet) {
+        this.resultSet = resultSet;
     }
 
-    public T getRow() {
-        return row;
+    public T getResultSet() {
+        return resultSet;
     }
 
-    public void setRow(T row) {
-        this.row = row;
+    public void setResultSet(T resultSet) {
+        this.resultSet = resultSet;
     }
 }

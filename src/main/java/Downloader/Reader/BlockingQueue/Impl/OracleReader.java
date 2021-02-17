@@ -1,7 +1,7 @@
-package Downloader.Reader.Impl;
+package Downloader.Reader.BlockingQueue.Impl;
 
 import Queue.BlockingQueue.QueueManager;
-import Downloader.Reader.Reader;
+import Downloader.Reader.BlockingQueue.Reader;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.driver.OracleDriver;

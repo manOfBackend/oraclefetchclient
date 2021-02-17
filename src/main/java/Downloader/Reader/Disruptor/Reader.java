@@ -1,6 +1,7 @@
-package Downloader.Reader;
+package Downloader.Reader.Disruptor;
 
 import Queue.BlockingQueue.QueueManager;
+import Queue.Disruptor.RowEventProducer;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -20,16 +21,15 @@ public abstract class Reader implements Runnable {
 
     protected final String password;
 
-    protected final QueueManager<?> queueManager;
+    protected final RowEventProducer producer;
 
-
-    public Reader(int fetchSize, String tableName, String hostName, String userName, String password, QueueManager<?> queueManager) {
+    public Reader(int fetchSize, String tableName, String hostName, String userName, String password, RowEventProducer producer) {
         this.fetchSize = fetchSize;
         this.tableName = tableName;
         this.hostName = hostName;
         this.userName = userName;
         this.password = password;
-        this.queueManager = queueManager;
+        this.producer = producer;
     }
 
     public abstract ResultSet createResultSet(Connection conn, String sql, int fetchSize) throws SQLException;
@@ -49,10 +49,9 @@ public abstract class Reader implements Runnable {
             if (resultSet == null) {
                 throw new SQLException("no resultSet");
             }
-            queueManager.addAllFetchToQueue(resultSet);
+            producer.onData(resultSet);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 }

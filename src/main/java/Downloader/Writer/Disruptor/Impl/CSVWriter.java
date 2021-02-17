@@ -8,8 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
 
-public class CSVWriter extends Writer<String[]> {
+public class CSVWriter extends Writer<ResultSet> {
     private com.opencsv.CSVWriter csvWriter;
 
     public CSVWriter(String outputPath) {
@@ -39,7 +40,8 @@ public class CSVWriter extends Writer<String[]> {
 
 
     @Override
-    public void onEvent(RowEvent<String[]> rowEvent, long sequence, boolean endOfBatch) throws Exception {
-        csvWriter.writeNext(rowEvent.getRow());
+    public void onEvent(RowEvent<ResultSet> rowEvent, long sequence, boolean endOfBatch) throws Exception {
+        ResultSet resultSet = rowEvent.getResultSet();
+//        csvWriter.writeNext();
     }
 }

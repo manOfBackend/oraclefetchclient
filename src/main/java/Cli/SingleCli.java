@@ -1,31 +1,19 @@
 package Cli;
 
-import Downloader.Reader.Impl.HiveReader;
+import Downloader.Reader.BlockingQueue.Reader;
+import Downloader.Reader.BlockingQueue.Impl.OracleReader;
 import Downloader.Reader.ReaderType;
-import Downloader.Writer.FileType;
-import Queue.BlockingQueue.Impl.CSVQueueManager;
-import Queue.BlockingQueue.Impl.ParquetQueueManager;
-import Downloader.Reader.Impl.OracleReader;
-import Downloader.Reader.Reader;
 import Downloader.Writer.BlockingQueue.Impl.CSVWriter;
 import Downloader.Writer.BlockingQueue.Impl.ParquetWriter;
 import Downloader.Writer.BlockingQueue.Writer;
-import Queue.Disruptor.DisruptorConfiguration;
-import Queue.Disruptor.DisruptorProperties;
-import Queue.Disruptor.Impl.CSVRowEventProducer;
-import Queue.Disruptor.RowEvent;
+import Downloader.Writer.FileType;
+import Queue.BlockingQueue.Impl.CSVQueueManager;
+import Queue.BlockingQueue.Impl.ParquetQueueManager;
 import avro.Impl.OracleTransformer;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SleepingWaitStrategy;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.dsl.ProducerType;
-import com.lmax.disruptor.util.DaemonThreadFactory;
 
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.*;
-import static picocli.CommandLine.Command;
-import static picocli.CommandLine.ParentCommand;
 
 /**
  *                 reader = new OracleReader(fetchSize, "adid_test",
@@ -73,6 +61,7 @@ public class SingleCli implements Callable<Integer> {
             case PARQUET -> {
                 ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
                 reader = new OracleReader(fetchSize, tableName, hostName, userName, password, queue);
+
                 writer = new ParquetWriter(outputFileName, queue);
             }
             case CSV -> {
