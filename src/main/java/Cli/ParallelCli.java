@@ -33,7 +33,7 @@ public class ParallelCli implements Callable<Integer> {
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
 
-    @Option(names = {"-sql", "--execute-sql"}, required = true)
+    @Option(names = {"-sql", "--execute-sql"}, defaultValue = "select * from adid_test")
     private String executeSql;
 
     @Option(names = {"-host", "--host-name"}, required = true)
@@ -59,15 +59,18 @@ public class ParallelCli implements Callable<Integer> {
 
         final int totalRowsCount = manager.getTotalRowsCount(executeSql);
 
-        final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        final ExecutorService executorService = Executors.newFixedThreadPool(threadCount * 2);
 
         int offset = 0;
         final int chunkSize = (int) Math.ceil((double) totalRowsCount / threadCount);
         System.out.println("TotalRows: " + totalRowsCount);
         System.out.println("chunkSize: " + chunkSize);
 
+        List<CompletableFuture<Void>> futureList = new ArrayList<>();
+
         for (int i = 0; i < threadCount; i++) {
 
+            System.out.println(i + " : " + executeSql);
             final OracleManager oracleManager = new OracleManager(hostName, userName, password);
 
             Reader reader = null;
@@ -77,23 +80,31 @@ public class ParallelCli implements Callable<Integer> {
                 case PARQUET -> {
                     ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
                     reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queue);
-                    writer = new ParquetWriter(outputFileName, queue);
+                    writer = new ParquetWriter(outputFileName + i, queue);
                 }
                 case CSV -> {
                     CSVQueueManager queue = new CSVQueueManager();
                     reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queue);
-                    writer = new CSVWriter(outputFileName, queue);
+                    writer = new CSVWriter(outputFileName + i, queue);
                 }
                 default -> {
                     return -1;
                 }
             }
 
-            executorService.execute(reader);
-            executorService.execute(writer);
-
+            futureList.add(CompletableFuture.runAsync(reader, executorService));
+            futureList.add(CompletableFuture.runAsync(writer, executorService));
             offset += chunkSize;
         }
+
+        final CompletableFuture<Void> all = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
+            System.out.println("완료");
+        }, executorService);
+
+        System.out.println("시작");
+        all.get();
+
+        executorService.shutdown();
 
         return 0;
     }

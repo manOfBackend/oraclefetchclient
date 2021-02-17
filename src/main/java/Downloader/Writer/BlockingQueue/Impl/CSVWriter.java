@@ -21,6 +21,7 @@ public class CSVWriter extends Writer {
     @Override
     public void run() {
 
+        System.out.println("Writer : " + outputPath);
         CSVQueueManager queue = (CSVQueueManager) queueManager;
         Path path = Paths.get(outputPath);
 

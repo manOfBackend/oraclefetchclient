@@ -64,6 +64,7 @@ public class OracleManager {
         String sql = String.format("SELECT count(*) AS TOTAL FROM (%s)", executeSql);
         final PreparedStatement preparedStatement = createOraclePreparedStatement(sql);
         final ResultSet resultSet = preparedStatement.executeQuery();
+        resultSet.next();
         return resultSet.getInt("TOTAL");
     }
 

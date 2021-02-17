@@ -8,7 +8,7 @@ class TransferCliTest {
 
     @Test
     void oracle_CSV_ParallelCommand_138MB_Test() {
-        String[] args = "-o c:\\adid_fetch\\output_adid.csv parallel --reader-type ORACLE -type CSV -t adid_test -host jdbc:oracle:thin:@localhost:1521:xe -u c##jong -p guswhd12".split(" ");
+        String[] args = "-o c:\\adid_fetch\\output_adid.csv parallel -type CSV -c 4 -host jdbc:oracle:thin:@localhost:1521:xe -u c##jong -p guswhd12".split(" ");
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         assertEquals(exitCode, 0);
     }

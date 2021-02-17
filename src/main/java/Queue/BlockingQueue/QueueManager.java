@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class QueueManager<T> {
 
-    private final BlockingQueue<List<T>> queue = new LinkedBlockingQueue<>(1000);
+    private final BlockingQueue<List<T>> queue = new LinkedBlockingQueue<>(100000);
 //    private static final Queue<List<String[]>> queue = new LinkedList<>();
 
     // 큐가 비어있으면 대기하는 최대 시간
