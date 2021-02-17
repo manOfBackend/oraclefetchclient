@@ -58,12 +58,9 @@ public class ParallelCli implements Callable<Integer> {
     public Integer call() throws Exception {
         //TODO: MULTI THREADING LOGIC
         // 싱글과 합쳐도 좋을 듯
+        // 좀 더 안전한지 테스트가 필요함
 
         String executeSql = Files.readString(executeSqlFile.toPath());
-
-        System.out.println("parallel");
-        System.out.println("Threads: " + threadCount);
-
         String outputFileName = transferCli.getOutputFileName();
 
         final OracleManager manager = new OracleManager(hostName, userName, password);
@@ -75,8 +72,6 @@ public class ParallelCli implements Callable<Integer> {
 
         int offset = 0;
         final int chunkSize = (int) Math.ceil((double) totalRowsCount / threadCount);
-        System.out.println("TotalRows: " + totalRowsCount);
-        System.out.println("chunkSize: " + chunkSize);
 
         List<CompletableFuture<Void>> readerList = new ArrayList<>();
         List<CompletableFuture<Void>> writerList = new ArrayList<>();
@@ -119,7 +114,6 @@ public class ParallelCli implements Callable<Integer> {
 
         readerAll.join();
         writerAll.cancel(true);
-
 
         return 0;
     }

@@ -30,16 +30,16 @@ import static picocli.CommandLine.*;
 /**
  * DB FETCH 스레드 1개와 FILE WRITE 스레드 1개로 작업하는 커맨드 클래스
  */
-@Command(name = "single", description = "")
+@Command(name = "single", description = "one to one thread")
 public class SingleCli implements Callable<Integer> {
 
     @ParentCommand
     private TransferCli transferCli;
 
-    @Option(names = {"-type", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
+    @Option(names = {"-type", "--file-type"}, description = "File Write Type (CSV, PARQUET)", required = true)
     private FileType fileType;
 
-    @Option(names = {"-reader", "--reader-type"}, description = "Reader Type (HIVE, ORACLE)", required = true)
+    @Option(names = {"-reader", "--reader-type"}, description = "Fetch Reader Type (HIVE, ORACLE)", required = true)
     private ReaderType readerType;
 
     @Option(names = {"-sql", "--execute-sql"}, required = true)

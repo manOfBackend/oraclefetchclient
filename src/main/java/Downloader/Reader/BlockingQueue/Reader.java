@@ -6,6 +6,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * 오라클 싱글, 오라클 병렬, 하이브 등 DBMS에서 Fetch를 받아오는 역할
+ * BlockingQueue를 사용하는 버전
+ * run() 메서드를 템플릿 메서드로 구현
+ */
 public abstract class Reader implements Runnable {
 
     // 쿼리당 가져오는 Row 수

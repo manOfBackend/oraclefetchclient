@@ -1,18 +1,15 @@
-package Downloader.Reader.BlockingQueue.Impl;
+package Downloader.Reader.Disruptor.Impl;
 
 import DbManager.Oracle.OracleManager;
-import Downloader.Reader.BlockingQueue.Reader;
+import Downloader.Reader.Disruptor.Reader;
 import Queue.BlockingQueue.QueueManager;
+import Queue.Disruptor.ResultSetEventProducer;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * 오라클 Fetch 병렬 처리 담당
- */
 public class OracleParallelReader extends Reader {
-
     private final int offset;
 
     private final int limit;
@@ -21,8 +18,8 @@ public class OracleParallelReader extends Reader {
 
     private final OracleManager oracleManager;
 
-    public OracleParallelReader(String executeSql, int fetchSize, int offset, int limit, OracleManager oracleManager, QueueManager<?> queueManager) {
-        super(fetchSize, executeSql, oracleManager.getHostName(), oracleManager.getUserName(), oracleManager.getPassword(), queueManager);
+    public OracleParallelReader(String executeSql, int fetchSize, int offset, int limit, OracleManager oracleManager, ResultSetEventProducer producer) {
+        super(fetchSize, executeSql, oracleManager.getHostName(), oracleManager.getUserName(), oracleManager.getPassword(), producer);
 
         this.offset = offset;
         this.limit = limit;
@@ -49,5 +46,4 @@ public class OracleParallelReader extends Reader {
     public Connection createConnection(String hostName) throws SQLException {
         return oracleManager.createConnection(hostName, userName, password);
     }
-
 }
