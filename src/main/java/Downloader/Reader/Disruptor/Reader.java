@@ -1,6 +1,6 @@
 package Downloader.Reader.Disruptor;
 
-import Queue.Disruptor.RowEventProducer;
+import Queue.Disruptor.ResultSetEventProducer;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -20,9 +20,9 @@ public abstract class Reader implements Runnable {
 
     protected final String password;
 
-    protected final RowEventProducer producer;
+    protected final ResultSetEventProducer producer;
 
-    public Reader(int fetchSize, String tableName, String hostName, String userName, String password, RowEventProducer producer) {
+    public Reader(int fetchSize, String tableName, String hostName, String userName, String password, ResultSetEventProducer producer) {
         this.fetchSize = fetchSize;
         this.tableName = tableName;
         this.hostName = hostName;

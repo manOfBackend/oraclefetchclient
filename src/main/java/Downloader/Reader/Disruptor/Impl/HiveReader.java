@@ -1,7 +1,7 @@
 package Downloader.Reader.Disruptor.Impl;
 
 import Downloader.Reader.Disruptor.Reader;
-import Queue.Disruptor.RowEventProducer;
+import Queue.Disruptor.ResultSetEventProducer;
 import org.apache.hive.jdbc.HiveDriver;
 
 import java.sql.Connection;
@@ -12,7 +12,7 @@ import java.util.Properties;
 
 public class HiveReader extends Reader {
 
-    public HiveReader(int fetchSize, String tableName, String hostName, String userName, String password, RowEventProducer producer) {
+    public HiveReader(int fetchSize, String tableName, String hostName, String userName, String password, ResultSetEventProducer producer) {
         super(fetchSize, tableName, hostName, userName, password, producer);
     }
 

@@ -1,7 +1,7 @@
 package Downloader.Writer.Disruptor.Impl;
 
 import Downloader.Writer.Disruptor.Writer;
-import Queue.Disruptor.RowEvent;
+import Queue.Disruptor.ResultSetEvent;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,8 +40,8 @@ public class CSVWriter extends Writer<ResultSet> {
 
 
     @Override
-    public void onEvent(RowEvent<ResultSet> rowEvent, long sequence, boolean endOfBatch) throws Exception {
-        ResultSet resultSet = rowEvent.getResultSet();
+    public void onEvent(ResultSetEvent resultSetEvent, long sequence, boolean endOfBatch) throws Exception {
+        ResultSet resultSet = resultSetEvent.getResultSet();
 //        csvWriter.writeNext();
     }
 }

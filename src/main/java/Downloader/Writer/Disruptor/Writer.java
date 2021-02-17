@@ -1,10 +1,9 @@
 package Downloader.Writer.Disruptor;
 
-import Queue.BlockingQueue.QueueManager;
-import Queue.Disruptor.RowEvent;
+import Queue.Disruptor.ResultSetEvent;
 import com.lmax.disruptor.EventHandler;
 
-public abstract class Writer<T> implements EventHandler<RowEvent<T>> {
+public abstract class Writer<T> implements EventHandler<ResultSetEvent> {
     protected String outputPath = "output.csv";
     public String getOutputPath() {
         return outputPath;

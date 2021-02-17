@@ -1,8 +1,6 @@
 package Queue.Disruptor;
 
 import Downloader.Writer.Disruptor.Writer;
-import Queue.Disruptor.DisruptorProperties;
-import Queue.Disruptor.RowEvent;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -14,18 +12,18 @@ public class DisruptorConfiguration {
         this.disruptorProperties = disruptorProperties;
     }
 
-    private EventFactory<RowEvent<?>> rowEventFactory() {
-        EventFactory<RowEvent<?>> rowEventEventFactory = new EventFactory<RowEvent<?>>() {
+    private EventFactory<ResultSetEvent> rowEventFactory() {
+        EventFactory<ResultSetEvent> rowEventEventFactory = new EventFactory<ResultSetEvent>() {
             @Override
-            public RowEvent<?> newInstance() {
-                return new RowEvent<>();
+            public ResultSetEvent newInstance() {
+                return new ResultSetEvent();
             }
         };
         return rowEventEventFactory;
     }
 
-    public RingBuffer<RowEvent<?>> run(Writer eventHandler) {
-        Disruptor<RowEvent<?>> disruptor = new Disruptor<>(
+    public RingBuffer<ResultSetEvent> run(Writer eventHandler) {
+        Disruptor<ResultSetEvent> disruptor = new Disruptor<>(
                 rowEventFactory(),
                 disruptorProperties.getRingBufferSize(),
                 disruptorProperties.getThreadFactory(),
@@ -35,7 +33,7 @@ public class DisruptorConfiguration {
 
         disruptor.handleEventsWith(eventHandler);
 
-        RingBuffer<RowEvent<?>> ringBuffer = disruptor.getRingBuffer();
+        RingBuffer<ResultSetEvent> ringBuffer = disruptor.getRingBuffer();
         disruptor.start();
 
         return ringBuffer;

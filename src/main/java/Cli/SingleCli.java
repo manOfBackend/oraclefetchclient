@@ -77,11 +77,11 @@ public class SingleCli implements Callable<Integer> {
 //                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
 //                DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
 //
-//                RowEvent<String[]> rowEvent;
+//                ResultSetEvent<String[]> rowEvent;
 //                reader = new HiveReader(fetchSize, tableName, hostName, userName, password);
 //                Downloader.Writer.Disruptor.Writer writer1 = new Downloader.Writer.Disruptor.Impl.CSVWriter(outputFileName);
 //
-//                RingBuffer<RowEvent<?>> ringBuffer = disruptor.run(writer1);
+//                RingBuffer<ResultSetEvent<?>> ringBuffer = disruptor.run(writer1);
 //                CSVRowEventProducer csvRowEventProducer = new CSVRowEventProducer(ringBuffer);
 //
 //                /** producer.onData(x) 하면 x가 ringBuffer에 추가되고, 콜백함수로 Write 됨 **/
