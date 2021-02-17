@@ -36,9 +36,6 @@ public class ParallelCli implements Callable<Integer> {
     @Option(names = {"-sql", "--execute-sql"}, required = true)
     private String executeSql;
 
-    @Option(names = {"-t", "--table-name"}, required = true)
-    private String tableName;
-
     @Option(names = {"-host", "--host-name"}, required = true)
     private String hostName;
 
@@ -60,7 +57,7 @@ public class ParallelCli implements Callable<Integer> {
 
         final OracleManager manager = new OracleManager(hostName, userName, password);
 
-        final int totalRowsCount = manager.getTotalRowsCount(tableName);
+        final int totalRowsCount = manager.getTotalRowsCount(executeSql);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
