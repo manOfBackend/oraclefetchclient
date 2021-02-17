@@ -41,11 +41,11 @@ public class SingleCli implements Callable<Integer> {
     @Option(names = {"-reader", "--reader-type"}, description = "Reader Type (HIVE, ORACLE)", required = true)
     private ReaderType readerType;
 
+    @Option(names = {"-sql", "--execute-sql"}, defaultValue = "select * from adid_test")
+    private String executeSql;
+
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
-
-    @Option(names = {"-t", "--table-name"}, required = true)
-    private String tableName;
 
     @Option(names = {"-host", "--host-name"}, required = true)
     private String hostName;
@@ -70,13 +70,13 @@ public class SingleCli implements Callable<Integer> {
         switch (fileType) {
             case PARQUET -> {
                 ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
-                reader = new OracleReader(fetchSize, tableName, hostName, userName, password, queue);
+                reader = new OracleReader(fetchSize, executeSql, hostName, userName, password, queue);
 
                 writer = new ParquetWriter(outputFileName, queue);
             }
             case CSV -> {
                 CSVQueueManager queue = new CSVQueueManager();
-                reader = new OracleReader(fetchSize, tableName, hostName, userName, password, queue);
+                reader = new OracleReader(fetchSize, executeSql, hostName, userName, password, queue);
                 writer = new CSVWriter(outputFileName, queue);
             }
 
@@ -94,7 +94,7 @@ public class SingleCli implements Callable<Integer> {
                 RingBuffer<ResultSetEvent> ringBuffer = disruptor.run(writer1);
                 ResultSetEventProducer resultSetEventProducer = new ResultSetEventProducer(ringBuffer);
 
-                Downloader.Reader.Disruptor.Reader reader1 = new HiveReader(fetchSize, tableName, hostName, userName, password, resultSetEventProducer);
+                Downloader.Reader.Disruptor.Reader reader1 = new HiveReader(fetchSize, executeSql, hostName, userName, password, resultSetEventProducer);
 
                 /** readerThread만 start()하면 Write은 Disruptor에서 콜백함수로 알아서 작동됨 **/
             }

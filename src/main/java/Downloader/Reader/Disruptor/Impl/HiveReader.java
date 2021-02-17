@@ -12,8 +12,8 @@ import java.util.Properties;
 
 public class HiveReader extends Reader {
 
-    public HiveReader(int fetchSize, String tableName, String hostName, String userName, String password, ResultSetEventProducer producer) {
-        super(fetchSize, tableName, hostName, userName, password, producer);
+    public HiveReader(int fetchSize, String sql, String hostName, String userName, String password, ResultSetEventProducer producer) {
+        super(fetchSize, sql, hostName, userName, password, producer);
     }
 
     @Override

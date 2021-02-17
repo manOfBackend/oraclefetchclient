@@ -14,8 +14,8 @@ import java.util.Properties;
 public class OracleReader extends Reader {
 
     @SuppressWarnings("rawtypes")
-    public OracleReader(int fetchSize, String tableName, String hostName, String userName, String password, QueueManager queueManager) {
-        super(fetchSize, tableName, hostName, userName, password, queueManager);
+    public OracleReader(int fetchSize, String sql, String hostName, String userName, String password, QueueManager queueManager) {
+        super(fetchSize, sql, hostName, userName, password, queueManager);
     }
 
     @Override
