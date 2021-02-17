@@ -2,17 +2,28 @@ package Cli;
 
 import Uploader.OracleUploader;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.Option;
 
+/**
+ * CSV TO ORACLE, CSV TO HIVE
+ * PARQUET TO ORACLE, PARQUET TO HIVE
+ */
 @Command(name = "upload")
 public class UploadCli implements Callable<Integer> {
-    @Option(names = {"-c", "--create-sql-file-name"}, required = true)
-    private String createSqlFileName;
 
-    @Option(names = {"-t", "--insert-sql-file-name"}, required = true)
-    private String insertSqlFileName;
+    @Option(names = {"-c", "--create-sql-file"}, required = true)
+    private File createSqlFile;
+
+    @Option(names = {"-i", "--insert-sql-file"}, required = true)
+    private File insertSqlFile;
+
+    @Option(names = {"-f", "--input-file-name"}, required = true)
+    private File inputFile;
 
     @Option(names = {"-host", "--host-name"}, required = true)
     private String hostName;
@@ -28,7 +39,11 @@ public class UploadCli implements Callable<Integer> {
         //TODO: UPLOAD LOGIC
         System.out.println("upload cli");
 
-        Thread uploadThread = new Thread(new OracleUploader("","", "", "", "", ""));
+        String createSql = Files.readString(createSqlFile.toPath());
+        String insertSql = Files.readString(insertSqlFile.toPath());
+        String inputFileName = inputFile.getPath();
+
+        Thread uploadThread = new Thread(new OracleUploader(createSql, insertSql, hostName, inputFileName, userName, password));
 
         uploadThread.start();
         uploadThread.join();

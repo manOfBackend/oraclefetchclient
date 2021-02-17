@@ -21,13 +21,14 @@ import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.ProducerType;
 import com.lmax.disruptor.util.DaemonThreadFactory;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.*;
 
 /**
- *                 reader = new OracleReader(fetchSize, "adid_test",
- *                         "jdbc:oracle:thin:@localhost:1521:xe", queue);
+ * DB FETCH 스레드 1개와 FILE WRITE 스레드 1개로 작업하는 커맨드 클래스
  */
 @Command(name = "single", description = "")
 public class SingleCli implements Callable<Integer> {
@@ -41,11 +42,14 @@ public class SingleCli implements Callable<Integer> {
     @Option(names = {"-reader", "--reader-type"}, description = "Reader Type (HIVE, ORACLE)", required = true)
     private ReaderType readerType;
 
-    @Option(names = {"-sql", "--execute-sql"}, defaultValue = "select * from adid_test")
-    private String executeSql;
+    @Option(names = {"-sql", "--execute-sql"}, required = true)
+    private File executeSqlFile;
 
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
+
+    @Option(names = {"--ring-buffer-size"}, defaultValue = "1024")
+    private int ringBufferSize;
 
     @Option(names = {"-host", "--host-name"}, required = true)
     private String hostName;
@@ -60,6 +64,7 @@ public class SingleCli implements Callable<Integer> {
     public Integer call() throws Exception {
 
         String outputFileName = transferCli.getOutputFileName();
+        String executeSql = Files.readString(executeSqlFile.toPath());
 
         System.out.println("fetchSize = " + fetchSize);
         System.out.println("outputFileName = " + outputFileName);
@@ -71,7 +76,6 @@ public class SingleCli implements Callable<Integer> {
             case PARQUET -> {
                 ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
                 reader = new OracleReader(fetchSize, executeSql, hostName, userName, password, queue);
-
                 writer = new ParquetWriter(outputFileName, queue);
             }
             case CSV -> {
@@ -81,8 +85,6 @@ public class SingleCli implements Callable<Integer> {
             }
 
             case DISRUPTOR_CSV -> {
-                /** 프로퍼티 옵션으로 조정하도록 변경 (디폴트는 현재) **/
-                int ringBufferSize = 1024;
                 WaitStrategy waitStrategy = new BlockingWaitStrategy();
                 /**********************************************/
 

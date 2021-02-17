@@ -22,6 +22,10 @@ import java.util.concurrent.Executors;
 
 import static picocli.CommandLine.*;
 
+/**
+ * 멀티 스레딩 fetch 커맨드 클래스
+ * 현재 오라클만 지원함
+ */
 @Command(name = "parallel")
 public class ParallelCli implements Callable<Integer> {
 
