@@ -15,6 +15,17 @@ public class DownloadThread implements Runnable {
     private String remoteHost;
     private String password;
 
+
+    public DownloadThread(long offset, long limit, int thnum, Path file, String username, String remoteHost, String password) {
+        this.offset = offset;
+        this.limit = limit;
+        this.thnum = thnum;
+        this.file = file;
+        this.username = username;
+        this.remoteHost = remoteHost;
+        this.password = password;
+    }
+
     //ssh session connect
     public ChannelSftp setupJsch() throws JSchException, IOException {
         JSch jsch = new JSch();
@@ -37,12 +48,6 @@ public class DownloadThread implements Runnable {
         return (ChannelSftp) jschSession.openChannel("sftp");
     }
 
-    public DownloadThread(int th_num, long offset, long limit, Path file) {
-        this.offset = offset;
-        this.limit = limit;
-        this.thnum = th_num;
-        this.file = file;
-    }
 
     @Override
     public void run() {

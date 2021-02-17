@@ -38,7 +38,7 @@ class TransferCliTest {
 
     @Test
     void lftp_CSV_SingleCommand_138MB_Test() {
-        String[] args = "-o c:\\adid_fetch\\output_adid.csv single -sql c:\\adid_fetch\\sql.txt --reader-type ORACLE -type CSV -host jdbc:oracle:thin:@localhost:1521:xe -u c##jong -p guswhd12".split(" ");
+        String[] args = "lftp -t down -s /home/fasoo/sftp_dir/sftp_dirym.txt -d c:\\download.txt -c 4 ".split(" ");
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         assertEquals(exitCode, 0);
     }

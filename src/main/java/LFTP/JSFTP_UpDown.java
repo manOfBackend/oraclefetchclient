@@ -20,20 +20,17 @@ public class JSFTP_UpDown {
     private String remoteHost;
     private String password;
 
+    public JSFTP_UpDown(String username, String remoteHost, String password) {
+        this.username = username;
+        this.remoteHost = remoteHost;
+        this.password = password;
+    }
+
     //ssh session connect
     public ChannelSftp setupJsch() throws JSchException, IOException {
         JSch jsch = new JSch();
         jsch.setKnownHosts("/Users/home/.ssh/known_hosts");
 
-        BufferedReader reader;
-        reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("config.txt"))));
-        String line = reader.readLine();
-        this.username = line;
-        line = reader.readLine();
-        this.remoteHost = line;
-        line = reader.readLine();
-        this.password = line;
-        reader.close();
         Session jschSession = jsch.getSession(username, remoteHost);
         jschSession.setPassword(password);
         jschSession.setConfig("StrictHostKeyChecking", "no");
@@ -51,18 +48,6 @@ public class JSFTP_UpDown {
         return size;
     }
 
-    //get extend of target file
-    public String getExtend() throws IOException, JSchException {
-        BufferedReader reader;
-        reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("config.txt"))));
-        String line = null;
-        for (int i = 0; i < 4; ++i) {
-            line = reader.readLine();
-        }
-        String ext = line.substring(line.lastIndexOf(".") + 1);
-        reader.close();
-        return ext;
-    }
 
     //get sections of remote file
     public List<FileChunk> makeFileChunk(int num, String srcFileName) throws IOException, JSchException, SftpException {
@@ -94,7 +79,7 @@ public class JSFTP_UpDown {
         List<CompletableFuture> list = new ArrayList<>();
 
         for (int i = 0; i < num; ++i) {
-            list.add(CompletableFuture.runAsync(new DownloadThread(i, fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), file), service));
+            list.add(CompletableFuture.runAsync(new DownloadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, file, username, remoteHost, password), service));
         }
         return list;
     }

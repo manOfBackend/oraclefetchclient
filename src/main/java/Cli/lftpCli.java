@@ -36,6 +36,15 @@ public class lftpCli implements Callable<Integer> {
     @Option(names = {"-d", "--dst"}, required = true)
     private String dstFileName;
 
+    @Option(names = {"-u", "--user-name"}, required = true)
+    private String userName;
+
+    @Option(names = {"-host", "--remote-host"}, required = true)
+    private String remoteHost;
+
+    @Option(names = {"-password", "--password"}, required = true)
+    private String password;
+
     @Option(names = {"-c", "--thread-count"}, required = true)
     private int threadCount;
 
@@ -143,7 +152,7 @@ public class lftpCli implements Callable<Integer> {
 
         System.out.println("lftp cli");
 
-        JSFTP_UpDown JS1 = new JSFTP_UpDown();
+        JSFTP_UpDown JS1 = new JSFTP_UpDown(userName, remoteHost, password);
 
         try {
             switch (transType) {
