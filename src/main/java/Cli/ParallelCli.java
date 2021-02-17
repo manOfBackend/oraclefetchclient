@@ -1,8 +1,16 @@
 package Cli;
 
 import DbManager.Oracle.OracleManager;
-import DbManager.Oracle.OracleParallelWorker;
+import Downloader.Reader.BlockingQueue.Impl.OracleParallelReader;
+import Downloader.Reader.BlockingQueue.Impl.OracleReader;
+import Downloader.Reader.BlockingQueue.Reader;
+import Downloader.Writer.BlockingQueue.Impl.CSVWriter;
+import Downloader.Writer.BlockingQueue.Impl.ParquetWriter;
+import Downloader.Writer.BlockingQueue.Writer;
 import Downloader.Writer.FileType;
+import Queue.BlockingQueue.Impl.CSVQueueManager;
+import Queue.BlockingQueue.Impl.ParquetQueueManager;
+import avro.Impl.OracleTransformer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +56,9 @@ public class ParallelCli implements Callable<Integer> {
         System.out.println("parallel");
         System.out.println("Threads: " + threadCount);
 
-        OracleManager manager = new OracleManager(hostName, userName, password);
+        String outputFileName = transferCli.getOutputFileName();
+
+        final OracleManager manager = new OracleManager(hostName, userName, password);
 
         final int totalRowsCount = manager.getTotalRowsCount(tableName);
 
@@ -56,21 +66,37 @@ public class ParallelCli implements Callable<Integer> {
 
         int offset = 0;
         final int chunkSize = (int) Math.ceil((double) totalRowsCount / threadCount);
-
-        List<CompletableFuture<Void>> futureList = new ArrayList<>();
+        System.out.println("TotalRows: " + totalRowsCount);
+        System.out.println("chunkSize: " + chunkSize);
 
         for (int i = 0; i < threadCount; i++) {
-            futureList.add(CompletableFuture.runAsync(
-                    new OracleParallelWorker(executeSql, offset, chunkSize,
-                            new OracleManager(hostName, userName, password)), executorService)
-            );
+
+            final OracleManager oracleManager = new OracleManager(hostName, userName, password);
+
+            Reader reader = null;
+            Writer writer = null;
+
+            switch (fileType) {
+                case PARQUET -> {
+                    ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
+                    reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queue);
+                    writer = new ParquetWriter(outputFileName, queue);
+                }
+                case CSV -> {
+                    CSVQueueManager queue = new CSVQueueManager();
+                    reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queue);
+                    writer = new CSVWriter(outputFileName, queue);
+                }
+                default -> {
+                    return -1;
+                }
+            }
+
+            executorService.execute(reader);
+            executorService.execute(writer);
+
             offset += chunkSize;
         }
-
-        final CompletableFuture<Void> allFutures = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new))
-                .thenRun(() -> { System.out.println("finish"); });
-
-        allFutures.get();
 
         return 0;
     }
