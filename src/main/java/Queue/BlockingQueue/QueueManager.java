@@ -1,8 +1,5 @@
 package Queue.BlockingQueue;
 
-import oracle.jdbc.OracleResultSet;
-import org.apache.avro.generic.GenericData;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -10,7 +7,6 @@ import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class QueueManager<T> {
 
@@ -31,6 +27,8 @@ public abstract class QueueManager<T> {
     }
 
     public Optional<List<T>> getList() {
+        //TODO: thread interrupt check -> thread shutdownnow
+        //책임을 여기서 하지 말 것
         if (Thread.interrupted()) {
             return Optional.ofNullable(queue.poll());
         }

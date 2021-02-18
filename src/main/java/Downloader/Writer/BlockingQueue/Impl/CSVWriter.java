@@ -32,8 +32,11 @@ public class CSVWriter extends Writer {
         {
             while (true) {
 
+                // TODO: thread interrupt check -> thread shutdownnow 인터럽트 처리를 여기서 할 것 (CATCH 추가)
+
                 Optional<List<String[]>> optionalList = queue.getList();
 
+                // TODO: empty라고 break는 안 된다. 10초 대기한다고 해도
                 if (optionalList.isEmpty()) {
                     break;
                 }
