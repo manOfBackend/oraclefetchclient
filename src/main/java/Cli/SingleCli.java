@@ -87,13 +87,15 @@ public class SingleCli implements Callable<Integer> {
             case DISRUPTOR_CSV -> {
                 /*********** 옵션으로 받아 처리하도록 수정 ************/
                 WaitStrategy waitStrategy = new BlockingWaitStrategy();
+
+                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
                 /************************************************/
 
 
                 // property를 토대로 disruptor 생성
-                DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
                 DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
 
+                // Writer, Reader Class명 변경해야함
                 Downloader.Writer.Disruptor.Writer writer1 = new Downloader.Writer.Disruptor.Impl.CSVWriter(outputFileName);
 
                 RingBuffer<ResultSetEvent> ringBuffer = disruptor.run(writer1);
@@ -101,7 +103,7 @@ public class SingleCli implements Callable<Integer> {
 
                 Downloader.Reader.Disruptor.Reader reader1 = new HiveReader(fetchSize, executeSql, hostName, userName, password, resultSetEventProducer);
 
-                /** readerThread만 start()하면 Write은 Disruptor에서 콜백함수로 알아서 작동됨 **/
+                /** 밑에서 readerThread만 start()하면 Write은 Disruptor에서 콜백함수로 알아서 작동됨 **/
             }
             default -> {
                 return -1;
