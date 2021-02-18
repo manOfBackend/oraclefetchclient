@@ -84,9 +84,14 @@ public class ParquetWriter extends Writer {
         ParquetQueueManager queue = (ParquetQueueManager) queueManager;
         while (true) {
             try {
-                Optional<List<GenericRecord>> optionalList = queue.getList();
+                Optional<List<GenericRecord>> optionalList = Optional.empty();
+                try {
+                    optionalList = queue.getList();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
                 if (optionalList.isEmpty()) {
-                    System.out.println("empty");
                     break;
                 }
                 initWriter();
