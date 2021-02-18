@@ -26,19 +26,10 @@ public abstract class QueueManager<T> {
         queue.add(list);
     }
 
-    public Optional<List<T>> getList() {
+    public Optional<List<T>> getList() throws InterruptedException {
         //TODO: thread interrupt check -> thread shutdownnow
         //책임을 여기서 하지 말 것
-        if (Thread.interrupted()) {
-            return Optional.ofNullable(queue.poll());
-        }
-        else {
-            try {
-                return Optional.ofNullable(queue.poll(TIMEOUT, TIME_UNIT));
-            } catch (InterruptedException interruptedException) {
-                return Optional.ofNullable(queue.poll());
-            }
-        }
+        return Optional.ofNullable(queue.poll(TIMEOUT, TimeUnit.SECONDS));
     }
 
     public abstract void addAllFetchToQueue(ResultSet rs) throws SQLException;

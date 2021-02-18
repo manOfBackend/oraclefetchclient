@@ -84,6 +84,7 @@ public class ParallelCli implements Callable<Integer> {
             Reader reader = null;
             Writer writer = null;
 
+            // TODO: switch JVM 버전에 따라 호환성 문제가 있을 수 있다. 고객사의 jvm 버전이 높지는 않을 것
             switch (fileType) {
                 case PARQUET -> {
                     ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
