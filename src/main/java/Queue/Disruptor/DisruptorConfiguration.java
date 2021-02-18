@@ -12,19 +12,20 @@ public class DisruptorConfiguration {
         this.disruptorProperties = disruptorProperties;
     }
 
-    private EventFactory<ResultSetEvent> rowEventFactory() {
-        EventFactory<ResultSetEvent> rowEventEventFactory = new EventFactory<ResultSetEvent>() {
+    private EventFactory<ResultSetEvent> resultSetEventEventFactory() {
+        EventFactory<ResultSetEvent> resultSetEventEventFactory = new EventFactory<ResultSetEvent>() {
             @Override
             public ResultSetEvent newInstance() {
                 return new ResultSetEvent();
             }
         };
-        return rowEventEventFactory;
+        return resultSetEventEventFactory;
     }
 
+    // Producer와 연결할 RingBuffer setting
     public RingBuffer<ResultSetEvent> run(Writer eventHandler) {
         Disruptor<ResultSetEvent> disruptor = new Disruptor<>(
-                rowEventFactory(),
+                resultSetEventEventFactory(),
                 disruptorProperties.getRingBufferSize(),
                 disruptorProperties.getThreadFactory(),
                 disruptorProperties.getProducerType(),

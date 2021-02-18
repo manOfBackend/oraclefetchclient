@@ -85,9 +85,12 @@ public class SingleCli implements Callable<Integer> {
             }
 
             case DISRUPTOR_CSV -> {
+                /*********** 옵션으로 받아 처리하도록 수정 ************/
                 WaitStrategy waitStrategy = new BlockingWaitStrategy();
-                /**********************************************/
+                /************************************************/
 
+
+                // property를 토대로 disruptor 생성
                 DisruptorProperties properties = new DisruptorProperties(ringBufferSize, waitStrategy, ProducerType.SINGLE, DaemonThreadFactory.INSTANCE);
                 DisruptorConfiguration disruptor = new DisruptorConfiguration(properties);
 

@@ -42,9 +42,11 @@ public class CSVWriter extends Writer {
     @Override
     public void onEvent(ResultSetEvent resultSetEvent, long sequence, boolean endOfBatch) throws Exception {
         ResultSet resultSet = resultSetEvent.getResultSet();
-        while (resultSet.next()) {
 
-//        csvWriter.writeNext()
+        // RingBuffer에서 ResultSet를 꺼내 처리
+        while (resultSet.next()) {
+            /** Logic **/
+//          csvWriter.writeNext()
         };
     }
 }

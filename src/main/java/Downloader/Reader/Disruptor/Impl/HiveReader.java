@@ -19,6 +19,8 @@ public class HiveReader extends Reader {
     @Override
     public ResultSet createResultSet(Connection conn, String sql, int fetchSize) throws SQLException {
         final Statement statement = conn.createStatement();
+
+        // Hive 옵션 설정
         statement.execute("set hive.server2.thrift.resultset.default.fetch.size=" + fetchSize);
 //        statement.execute("set hive.exec.parallel=true");
 //        statement.execute("set hive.vectorized.execution.enabled=true");
