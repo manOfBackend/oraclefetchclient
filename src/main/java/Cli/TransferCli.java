@@ -15,7 +15,9 @@ import static picocli.CommandLine.Option;
                 {
                         SingleCli.class,
                         ParallelCli.class,
-                        UploadCli.class
+                        UploadCli.class,
+                        LftpCli.class
+
                 })
 public class TransferCli implements Callable<Integer> {
 

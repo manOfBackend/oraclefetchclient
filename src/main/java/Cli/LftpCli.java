@@ -21,7 +21,7 @@ import static picocli.CommandLine.*;
 import static picocli.CommandLine.Command;
 
 @Command(name = "lftp")
-public class lftpCli implements Callable<Integer> {
+public class LftpCli implements Callable<Integer> {
 
     @Option(names = {"-t", "--trans-type"}, required = true)
     private String transType;
@@ -55,26 +55,31 @@ public class lftpCli implements Callable<Integer> {
 
     }
 
-    private Path createFile() throws IOException {
+//    private Path createFile() throws IOException {
+//        Path path = Path.of(dstFileName);
+//        if (Files.exists(path)) {
+//            Files.delete(path);
+//        }
+//        Path file = Files.createFile(path);
+//        return file;
+//    }
+
+    private void FileSizeAllocate(long size) throws IOException {
         Path path = Path.of(dstFileName);
         if (Files.exists(path)) {
             Files.delete(path);
         }
         Path file = Files.createFile(path);
-        return file;
-    }
-
-    private void FileSizeAllocate(long size, Path file) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(String.valueOf(file), "rw");
         raf.setLength(size);
         raf.close();
     }
 
-    private void MakingThreads(JSFTP_UpDown JS1, int num, List<FileChunk> fileChunkList, Path file) {
+    private void MakingThreads(JSFTP_UpDown JS1, int num, List<FileChunk> fileChunkList) {
         ExecutorService service = Executors.newFixedThreadPool(num);
         List<CompletableFuture> futureList = new ArrayList<>();
 
-        futureList = JS1.addCompletableFuture(num, fileChunkList, futureList, file);
+        futureList = JS1.addCompletableFuture(num, fileChunkList, futureList, dstFileName, srcFileName);
 
         CompletableFuture<Void> futureAll = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRun(() -> {
             System.out.println("Download finish");
@@ -171,8 +176,12 @@ public class lftpCli implements Callable<Integer> {
         List<FileChunk> fileChunkList = new ArrayList<>();
         fileChunkList = JS1.makeFileChunk(threadCount, srcFileName);
         PrintFileChunks(threadCount, fileChunkList);
-        Path file = createFile();
-        FileSizeAllocate(JS1.getSize(srcFileName), file);
-        MakingThreads(JS1, threadCount, fileChunkList, file);
+
+        //make dstFile & dstFile size allocate
+        FileSizeAllocate(JS1.getSize(srcFileName));
+
+        //making downloadThread
+        MakingThreads(JS1, threadCount, fileChunkList);
+
     }
 }
