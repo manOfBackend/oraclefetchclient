@@ -64,7 +64,7 @@ public class LftpCli implements Callable<Integer> {
     private void up(JSFTP_UpDown JS1) throws IOException, JSchException, SftpException {
 
         //create empty file & put, set length remote file
-        JS1.putEmptyFile(srcFileName, dstFileName, remoteDir);
+        JS1.setLength(srcFileName, dstFileName, remoteDir);
 
         //get sections of src file
         List<FileChunk> fileChunkList = new ArrayList<>();

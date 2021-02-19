@@ -113,7 +113,7 @@ public class JSFTP_UpDown {
     }
 
     //remote file set size
-    public void putEmptyFile(String srcFileName, String dstFileName, String remoteDir) throws IOException, JSchException, SftpException {
+    public void setLength(String srcFileName, String dstFileName, String remoteDir) throws IOException, JSchException, SftpException {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
 
@@ -127,15 +127,15 @@ public class JSFTP_UpDown {
         //send empty file
         channelSftp.put(String.valueOf(dstFile), remoteDir);
 
-//        //get size of src file
-//        File srcFile = new File(srcFileName);
-//        long srcSize = srcFile.length();
-//
-//        //set length of remote file
-//        SftpATTRS sftpATTRS = channelSftp.stat(remoteDir+dstFileName);
-//        sftpATTRS.setSIZE(srcSize);
-//        System.out.println(sftpATTRS.getSize());
-//        channelSftp.setStat(remoteDir+dstFileName, sftpATTRS);
+        //get size of src file
+        File srcFile = new File(srcFileName);
+        long srcSize = srcFile.length();
+
+        //set length of remote file
+        SftpATTRS sftpATTRS = channelSftp.stat(remoteDir+dstFileName);
+        sftpATTRS.setSIZE(srcSize);
+        System.out.println(sftpATTRS.getSize());
+        channelSftp.setStat(remoteDir+dstFileName, sftpATTRS);
 
         channelSftp.quit();
         channelSftp.getSession().disconnect();
