@@ -1,0 +1,82 @@
+LFTP/UploadThread.java
+ LFTP.UploadThread
+Downloader/Reader/Disruptor/Impl/HiveReader.java
+ Downloader.Reader.Disruptor.Impl.HiveReader
+Queue/Disruptor/ResultSetEvent.java
+ Queue.Disruptor.ResultSetEvent
+Downloader/Reader/Disruptor/Impl/OracleParallelReader.java
+ Downloader.Reader.Disruptor.Impl.OracleParallelReader
+LFTP/DownloadThread.java
+ LFTP.DownloadThread
+Downloader/Reader/Disruptor/Impl/OracleReader.java
+ Downloader.Reader.Disruptor.Impl.OracleReader
+Queue/BlockingQueue/QueueManager.java
+ Queue.BlockingQueue.QueueManager
+Queue/BlockingQueue/Impl/ParquetQueueManager.java
+ Queue.BlockingQueue.Impl.ParquetQueueManager
+Downloader/Reader/BlockingQueue/Impl/HiveReader.java
+ Downloader.Reader.BlockingQueue.Impl.HiveReader
+Queue/Disruptor/ResultSetEventProducer.java
+ Queue.Disruptor.ResultSetEventProducer
+ Queue.Disruptor.ResultSetEventProducer$1
+Queue/Disruptor/DisruptorProperties.java
+ Queue.Disruptor.DisruptorProperties
+Downloader/Writer/Disruptor/Impl/CSVWriter.java
+ Downloader.Writer.Disruptor.Impl.CSVWriter
+Downloader/Reader/BlockingQueue/Impl/OracleReader.java
+ Downloader.Reader.BlockingQueue.Impl.OracleReader
+Downloader/Reader/BlockingQueue/Impl/OracleParallelReader.java
+ Downloader.Reader.BlockingQueue.Impl.OracleParallelReader
+Uploader/OracleUploader.java
+ Uploader.OracleUploader
+Downloader/Writer/BlockingQueue/Impl/CSVWriter.java
+ Downloader.Writer.BlockingQueue.Impl.CSVWriter
+Cli/LftpCli.java
+ Cli.LftpCli
+avro/ResultSetTransformer.java
+ avro.ResultSetTransformer
+Downloader/Reader/BlockingQueue/Reader.java
+ Downloader.Reader.BlockingQueue.Reader
+Downloader/Writer/BlockingQueue/Impl/ParquetWriter.java
+ Downloader.Writer.BlockingQueue.Impl.ParquetWriter
+Downloader/Writer/Disruptor/Writer.java
+ Downloader.Writer.Disruptor.Writer
+Queue/Disruptor/DisruptorConfiguration.java
+ Queue.Disruptor.DisruptorConfiguration
+ Queue.Disruptor.DisruptorConfiguration$1
+Downloader/Reader/ReaderType.java
+ Downloader.Reader.ReaderType
+Queue/BlockingQueue/Impl/CSVQueueManager.java
+ Queue.BlockingQueue.Impl.CSVQueueManager
+avro/Impl/OracleTransformer.java
+ avro.Impl.OracleTransformer
+Cli/UploadCli.java
+ Cli.UploadCli
+avro/Schema/SchemaSqlMapping.java
+ avro.Schema.SchemaSqlMapping
+Downloader/Writer/Disruptor/Impl/ParquetWriter.java
+ Downloader.Writer.Disruptor.Impl.ParquetWriter
+avro/Schema/SchemaResults.java
+ avro.Schema.SchemaResults
+LFTP/JSFTP_UpDown.java
+ LFTP.JSFTP_UpDown
+Downloader/Reader/Disruptor/Reader.java
+ Downloader.Reader.Disruptor.Reader
+Downloader/Writer/BlockingQueue/Writer.java
+ Downloader.Writer.BlockingQueue.Writer
+LFTP/FileChunk.java
+ LFTP.FileChunk
+Downloader/Writer/FileType.java
+ Downloader.Writer.FileType
+avro/Schema/SchemaGenerator.java
+ avro.Schema.SchemaGenerator
+DbManager/Oracle/OracleManager.java
+ DbManager.Oracle.OracleManager
+Cli/SingleCli.java
+ Cli.SingleCli
+ Cli.SingleCli$1
+Cli/ParallelCli.java
+ Cli.ParallelCli
+ Cli.ParallelCli$1
+Cli/TransferCli.java
+ Cli.TransferCli

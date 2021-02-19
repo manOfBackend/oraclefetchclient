@@ -15,6 +15,7 @@
                 <configuration>
                     <source>14</source>
                     <target>14</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
         </plugins>
@@ -85,21 +86,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-connectors -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-connectors</artifactId>
-            <version>1.1.5</version>
-            <type>pom</type>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-filesystem -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-filesystem_2.12</artifactId>
-            <version>1.10.1</version>
-        </dependency>
-
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
@@ -111,7 +97,6 @@
             <artifactId>sshj</artifactId>
             <version>0.27.0</version>
         </dependency>
-
 
     </dependencies>
 </project>
