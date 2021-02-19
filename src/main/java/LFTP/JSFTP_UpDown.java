@@ -2,9 +2,7 @@ package LFTP;
 
 import com.jcraft.jsch.*;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,12 +14,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class JSFTP_UpDown {
-    private String username;
+    private String userName;
     private String remoteHost;
     private String password;
 
     public JSFTP_UpDown(String username, String remoteHost, String password) {
-        this.username = username;
+        this.userName = username;
         this.remoteHost = remoteHost;
         this.password = password;
     }
@@ -31,7 +29,7 @@ public class JSFTP_UpDown {
         JSch jsch = new JSch();
         jsch.setKnownHosts("/Users/home/.ssh/known_hosts");
 
-        Session jschSession = jsch.getSession(username, remoteHost);
+        Session jschSession = jsch.getSession(userName, remoteHost);
         jschSession.setPassword(password);
         jschSession.setConfig("StrictHostKeyChecking", "no");
         jschSession.connect();
@@ -80,7 +78,7 @@ public class JSFTP_UpDown {
         List<CompletableFuture> list = new ArrayList<>();
 
         for (int i = 0; i < num; ++i) {
-            list.add(CompletableFuture.runAsync(new DownloadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, dstFileName, srcFileName,username, remoteHost, password), service));
+            list.add(CompletableFuture.runAsync(new DownloadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, dstFileName, srcFileName, userName, remoteHost, password), service));
         }
         return list;
     }
@@ -115,12 +113,12 @@ public class JSFTP_UpDown {
     }
 
     //remote file set size
-    public void setLength(String srcFileName, String dstFileName, String remoteDir) throws IOException, JSchException, SftpException {
+    public void putEmptyFile(String srcFileName, String dstFileName, String remoteDir) throws IOException, JSchException, SftpException {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
 
         //create empty file at local
-        Path path = Paths.get(String.valueOf(Path.of(srcFileName).getFileName()));
+        Path path = Paths.get(dstFileName);
         if (Files.exists(path)) {
             Files.delete(path);
         }
@@ -129,15 +127,16 @@ public class JSFTP_UpDown {
         //send empty file
         channelSftp.put(String.valueOf(dstFile), remoteDir);
 
-        //get size of src file
-        File srcFile = new File(srcFileName);
-        long srcSize = srcFile.length();
+//        //get size of src file
+//        File srcFile = new File(srcFileName);
+//        long srcSize = srcFile.length();
+//
+//        //set length of remote file
+//        SftpATTRS sftpATTRS = channelSftp.stat(remoteDir+dstFileName);
+//        sftpATTRS.setSIZE(srcSize);
+//        System.out.println(sftpATTRS.getSize());
+//        channelSftp.setStat(remoteDir+dstFileName, sftpATTRS);
 
-        //set length of remote file
-        SftpATTRS sftpATTRS = channelSftp.stat(String.valueOf(dstFile));
-        sftpATTRS.setSIZE(srcSize);
-        System.out.println(sftpATTRS.getSize());
-        channelSftp.setStat(dstFileName, sftpATTRS);
         channelSftp.quit();
         channelSftp.getSession().disconnect();
     }

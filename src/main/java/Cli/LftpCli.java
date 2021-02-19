@@ -33,7 +33,7 @@ public class LftpCli implements Callable<Integer> {
     @Option(names = {"-s", "--src"}, required = true)
     private String srcFileName;
 
-    @Option(names = {"-d", "--dst"}, required = true)
+    @Option(names = {"-d", "--dst"}, required = false)
     private String dstFileName;
 
     @Option(names = {"-u", "--user-name"}, required = true)
@@ -51,41 +51,6 @@ public class LftpCli implements Callable<Integer> {
     @Option(names = {"-remotedir", "--remotedir"}, required = false)
     private String remoteDir;
 
-    private void PrintFileChunks(int num, List<FileChunk> fileChunkList) {
-        for (int i = 0; i < num; ++i) {
-            System.out.println(fileChunkList.get(i).getOffset() + " " + fileChunkList.get(i).getLimit());
-        }
-
-    }
-
-    private void FileSizeAllocate(long size) throws IOException {
-        Path path = Path.of(dstFileName);
-        if (Files.exists(path)) {
-            Files.delete(path);
-        }
-        Path file = Files.createFile(path);
-        RandomAccessFile raf = new RandomAccessFile(String.valueOf(file), "rw");
-        raf.setLength(size);
-        raf.close();
-    }
-
-    private void MakingThreads(JSFTP_UpDown JS1, int num, List<FileChunk> fileChunkList) {
-        ExecutorService service = Executors.newFixedThreadPool(num);
-        List<CompletableFuture> futureList = new ArrayList<>();
-
-        futureList = JS1.addCompletableFuture(num, fileChunkList, dstFileName, srcFileName);
-
-        CompletableFuture<Void> futureAll = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRun(() -> {
-            System.out.println("Download finish");
-        });
-        try {
-            futureAll.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-        service.shutdownNow();
-    }
-
     private void upload(JSFTP_UpDown JS1) throws IOException, JSchException, SftpException {
         BufferedReader reader;
         reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("up.txt"))));
@@ -96,20 +61,24 @@ public class LftpCli implements Callable<Integer> {
         System.out.println("upload finish");
     }
 
-    private void up(JSFTP_UpDown JS1, int num) throws IOException, JSchException, SftpException {
+    private void up(JSFTP_UpDown JS1) throws IOException, JSchException, SftpException {
 
         //create empty file & put, set length remote file
-        JS1.setLength(srcFileName, dstFileName, remoteDir);
+        JS1.putEmptyFile(srcFileName, dstFileName, remoteDir);
 
         //get sections of src file
-        List<FileChunk> list = new ArrayList<>();
-        list = JS1.makeFileChunk1(num, srcFileName);
+        List<FileChunk> fileChunkList = new ArrayList<>();
+        fileChunkList = JS1.makeFileChunk1(threadCount, srcFileName);
 
-        //Making Threads
-        ExecutorService service = Executors.newFixedThreadPool(num);
+        //making uploadThread & executing
+        MakingThreads_up(fileChunkList);
+    }
+
+    private void MakingThreads_up(List<FileChunk> fileChunkList) {
+        ExecutorService service = Executors.newFixedThreadPool(threadCount);
         List<CompletableFuture> futureList = new ArrayList<>();
-        for (int i = 0; i < num; ++i) {
-            futureList.add(CompletableFuture.runAsync(new UploadThread(i, list.get(i).getOffset(), list.get(i).getLimit(), Path.of(srcFileName)), service));
+        for (int i = 0; i < threadCount; ++i) {
+            futureList.add(CompletableFuture.runAsync(new UploadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, remoteDir+dstFileName, srcFileName, userName, remoteHost, password), service));
         }
         CompletableFuture<Void> futureAll = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRun(() -> {
             System.out.println("finish");
@@ -122,21 +91,6 @@ public class LftpCli implements Callable<Integer> {
         service.shutdownNow();
     }
 
-    public String getHash(String path) throws IOException, NoSuchAlgorithmException {
-        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-        FileInputStream fileInputStream = new FileInputStream(path);
-        byte[] dataBytes = new byte[1024];
-        int nRead = 0;
-        while ((nRead = fileInputStream.read(dataBytes)) != -1) {
-            messageDigest.update(dataBytes, 0, nRead);
-        }
-        byte[] mdBytes = messageDigest.digest();
-        StringBuilder stringBuffer = new StringBuilder();
-        for (byte mdByte : mdBytes) {
-            stringBuffer.append(Integer.toString((mdByte & 0xff) + 0x100, 16)).substring(1);
-        }
-        return stringBuffer.toString();
-    }
 
     @Override
     public Integer call() {
@@ -150,7 +104,7 @@ public class LftpCli implements Callable<Integer> {
             switch (transType) {
                 case "download", "down" -> download(JS1);
                 case "upload" -> upload(JS1);
-                case "up" -> up(JS1, threadCount);
+                case "up" -> up(JS1);
             }
         } catch (IOException | JSchException | SftpException ioException) {
             ioException.printStackTrace();
@@ -169,7 +123,57 @@ public class LftpCli implements Callable<Integer> {
         FileSizeAllocate(JS1.getSize(srcFileName));
 
         //making downloadThread & executing
-        MakingThreads(JS1, threadCount, fileChunkList);
+        MakingThreads_down(JS1, threadCount, fileChunkList);
 
+    }
+
+    private void FileSizeAllocate(long size) throws IOException {
+        Path path = Path.of(dstFileName);
+        if (Files.exists(path)) {
+            Files.delete(path);
+        }
+        Path file = Files.createFile(path);
+        RandomAccessFile raf = new RandomAccessFile(String.valueOf(file), "rw");
+        raf.setLength(size);
+        raf.close();
+    }
+
+    private void MakingThreads_down(JSFTP_UpDown JS1, int num, List<FileChunk> fileChunkList) {
+        ExecutorService service = Executors.newFixedThreadPool(num);
+        List<CompletableFuture> futureList = new ArrayList<>();
+
+        futureList = JS1.addCompletableFuture(num, fileChunkList, dstFileName, srcFileName);
+
+        CompletableFuture<Void> futureAll = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRun(() -> {
+            System.out.println("Download finish");
+        });
+        try {
+            futureAll.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        service.shutdownNow();
+    }
+
+    private void PrintFileChunks(int num, List<FileChunk> fileChunkList) {
+        for (int i = 0; i < num; ++i) {
+            System.out.println(fileChunkList.get(i).getOffset() + " " + fileChunkList.get(i).getLimit());
+        }
+    }
+
+    public String getHash(String path) throws IOException, NoSuchAlgorithmException {
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+        FileInputStream fileInputStream = new FileInputStream(path);
+        byte[] dataBytes = new byte[1024];
+        int nRead = 0;
+        while ((nRead = fileInputStream.read(dataBytes)) != -1) {
+            messageDigest.update(dataBytes, 0, nRead);
+        }
+        byte[] mdBytes = messageDigest.digest();
+        StringBuilder stringBuffer = new StringBuilder();
+        for (byte mdByte : mdBytes) {
+            stringBuffer.append(Integer.toString((mdByte & 0xff) + 0x100, 16)).substring(1);
+        }
+        return stringBuffer.toString();
     }
 }
