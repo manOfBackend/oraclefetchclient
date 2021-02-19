@@ -13,6 +13,7 @@ import avro.Impl.OracleTransformer;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -63,19 +64,34 @@ public class ParallelCli implements Callable<Integer> {
         String executeSql = Files.readString(executeSqlFile.toPath());
         String outputFileName = transferCli.getOutputFileName();
 
-        final OracleManager manager = new OracleManager(hostName, userName, password);
-
-        final int totalRowsCount = manager.getTotalRowsCount(executeSql);
+        final int totalRowsCount = getTotalRowsCount(executeSql);
 
         final ExecutorService readerPool = Executors.newFixedThreadPool(threadCount);
         final ExecutorService writerPool = Executors.newFixedThreadPool(threadCount);
 
-        int offset = 0;
         final int chunkSize = (int) Math.ceil((double) totalRowsCount / threadCount);
 
         List<CompletableFuture<Void>> readerList = new ArrayList<>();
         List<CompletableFuture<Void>> writerList = new ArrayList<>();
 
+        createReadersAndWriters(executeSql, outputFileName, readerPool, writerPool,
+                chunkSize, readerList, writerList);
+
+        final CompletableFuture<Void> readerAll = CompletableFuture.allOf(readerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
+            System.out.println("reader 완료");
+        });
+        final CompletableFuture<Void> writerAll = CompletableFuture.allOf(writerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
+            System.out.println("writer 완료");
+        });
+
+        readerAll.join();
+        writerAll.cancel(true);
+
+        return 0;
+    }
+
+    private void createReadersAndWriters(String executeSql, String outputFileName, ExecutorService readerPool, ExecutorService writerPool, int chunkSize, List<CompletableFuture<Void>> readerList, List<CompletableFuture<Void>> writerList) throws SQLException {
+        int offset = 0;
         for (int i = 0; i < threadCount; i++) {
 
             System.out.println(i + " : " + executeSql);
@@ -97,7 +113,7 @@ public class ParallelCli implements Callable<Integer> {
                     writer = new CSVWriter(outputFileName + i, queue);
                 }
                 default -> {
-                    return -1;
+                    return;
                 }
             }
 
@@ -105,17 +121,11 @@ public class ParallelCli implements Callable<Integer> {
             writerList.add(CompletableFuture.runAsync(writer, writerPool));
             offset += chunkSize;
         }
+    }
 
-        final CompletableFuture<Void> readerAll = CompletableFuture.allOf(readerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
-            System.out.println("reader 완료");
-        });
-        final CompletableFuture<Void> writerAll = CompletableFuture.allOf(writerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
-            System.out.println("writer 완료");
-        });
+    private int getTotalRowsCount(String executeSql) throws SQLException {
+        final OracleManager manager = new OracleManager(hostName, userName, password);
 
-        readerAll.join();
-        writerAll.cancel(true);
-
-        return 0;
+        return manager.getTotalRowsCount(executeSql);
     }
 }
