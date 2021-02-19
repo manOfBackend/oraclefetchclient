@@ -1,9 +1,16 @@
 package DbManager.Oracle;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,6 +56,47 @@ public class OracleManager {
         connect.setAutoCommit(false);
         connect.setDefaultExecuteBatch(500);
         return connect;
+    }
+
+
+    public void upload() {
+
+        System.out.println("Running: " + insertSql);
+
+        try (
+                OracleConnection conn = createConnection(hostName, userName, password);
+                OraclePreparedStatement oracleStmt = (OraclePreparedStatement) conn.prepareStatement(insertSql);
+                BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(inputFileName), StandardCharsets.UTF_8)
+        ) {
+            conn.setAutoCommit(false);
+            conn.setDefaultExecuteBatch(500);
+
+            CSVReader reader = new CSVReader(bufferedReader);
+
+            String[] records = reader.readNext();
+
+
+
+            while ((records = reader.readNext()) != null) {
+                int n = records.length;;
+
+                /*
+                sql_statement.setString(1, nextLine[0]);
+                sql_statement.setDouble(2,Double.parseDouble(nextLine[1]));
+                // Add the record to batch
+                sql_statement.addBatch();
+                 */
+                oracleStmt.addBatch();
+            }
+
+            long[] batchs = oracleStmt.executeLargeBatch();
+
+            conn.commit();
+        } catch (SQLException | IOException | CsvValidationException throwables) {
+            throwables.printStackTrace();
+        }
+
+
     }
 
     public PreparedStatement createOraclePreparedStatement(String sql) throws SQLException {
