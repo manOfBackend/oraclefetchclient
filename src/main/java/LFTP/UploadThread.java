@@ -49,9 +49,9 @@ public class UploadThread implements Runnable {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
         OutputStream outputStream = null;
-        outputStream = channelSftp.put(dstFileName, null, ChannelSftp.APPEND, offset);
-//        if(thnum==0) outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND,0);
-//        else outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND,offset);
+        //outputStream = channelSftp.put(dstFileName, null, ChannelSftp.APPEND, offset);
+        if(thnum==0) outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND,0);
+        else outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND,offset);
         InputStream inputStream = null;
         inputStream = new FileInputStream(srcFileName);
         inputStream.skipNBytes(offset);

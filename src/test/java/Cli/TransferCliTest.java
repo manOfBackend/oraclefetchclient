@@ -58,7 +58,7 @@ class TransferCliTest {
 
     @Test
     void filename_Test() {
-        Path of = Path.of("c:\\up.txt");
+        Path of = Path.of("up.txt");
         System.out.println(of.getFileName());
     }
 

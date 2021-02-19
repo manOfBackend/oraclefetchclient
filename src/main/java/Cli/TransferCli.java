@@ -25,7 +25,6 @@ public class TransferCli implements Callable<Integer> {
     private String outputFileName;
 
     public static void main(String[] args) {
-
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         System.exit(exitCode);
     }
