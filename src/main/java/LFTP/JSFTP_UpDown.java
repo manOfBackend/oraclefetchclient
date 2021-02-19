@@ -45,9 +45,9 @@ public class JSFTP_UpDown {
 
         long size = channelSftp.stat(srcFileName).getSize();
         channelSftp.quit();
+        channelSftp.getSession().disconnect();
         return size;
     }
-
 
     //get sections of remote file
     public List<FileChunk> makeFileChunk(int num, String srcFileName) throws IOException, JSchException, SftpException {
@@ -70,16 +70,17 @@ public class JSFTP_UpDown {
             offset += interval;
         }
         channelSftp.quit();
+        channelSftp.getSession().disconnect();
         return list;
     }
 
     //Making Threads
-    public List<CompletableFuture> addCompletableFuture(int num, List<FileChunk> fileChunkList, List<CompletableFuture> futureList, Path file) {
+    public List<CompletableFuture> addCompletableFuture(int num, List<FileChunk> fileChunkList, String dstFileName,String srcFileName) {
         ExecutorService service = Executors.newFixedThreadPool(num);
         List<CompletableFuture> list = new ArrayList<>();
 
         for (int i = 0; i < num; ++i) {
-            list.add(CompletableFuture.runAsync(new DownloadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, file, username, remoteHost, password), service));
+            list.add(CompletableFuture.runAsync(new DownloadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, dstFileName, srcFileName,username, remoteHost, password), service));
         }
         return list;
     }
@@ -90,6 +91,7 @@ public class JSFTP_UpDown {
         channelSftp.connect();
         channelSftp.put(localFile, remoteDir);
         channelSftp.quit();
+        channelSftp.getSession().disconnect();
     }
 
     //parallel upload...
@@ -109,18 +111,35 @@ public class JSFTP_UpDown {
         //send empty file
         channelSftp.put(String.valueOf(file), remoteDir);
         channelSftp.quit();
+        channelSftp.getSession().disconnect();
     }
 
     //remote file set size
-    public void setLength(long srcSize, String file) throws IOException, JSchException, SftpException {
+    public void setLength(String srcFileName, String dstFileName, String remoteDir) throws IOException, JSchException, SftpException {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
-        //set length remote file
-        SftpATTRS sftpATTRS = channelSftp.stat(file);
+
+        //create empty file at local
+        Path path = Paths.get(String.valueOf(Path.of(srcFileName).getFileName()));
+        if (Files.exists(path)) {
+            Files.delete(path);
+        }
+        Path dstFile = Files.createFile(path);
+
+        //send empty file
+        channelSftp.put(String.valueOf(dstFile), remoteDir);
+
+        //get size of src file
+        File srcFile = new File(srcFileName);
+        long srcSize = srcFile.length();
+
+        //set length of remote file
+        SftpATTRS sftpATTRS = channelSftp.stat(String.valueOf(dstFile));
         sftpATTRS.setSIZE(srcSize);
         System.out.println(sftpATTRS.getSize());
-        channelSftp.setStat(file, sftpATTRS);
+        channelSftp.setStat(dstFileName, sftpATTRS);
         channelSftp.quit();
+        channelSftp.getSession().disconnect();
     }
 
     //get sections of local src file

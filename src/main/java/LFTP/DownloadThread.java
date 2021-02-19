@@ -10,36 +10,28 @@ public class DownloadThread implements Runnable {
     private long offset;
     private long limit;
     private int thnum;
-    private Path file;
+    private String dstFileName;
+    private String srcFileName;
     private String username;
     private String remoteHost;
     private String password;
 
 
-    public DownloadThread(long offset, long limit, int thnum, Path file, String username, String remoteHost, String password) {
+    public DownloadThread(long offset, long limit, int thnum, String dstFileName,String srcFileName, String username, String remoteHost, String password) {
         this.offset = offset;
         this.limit = limit;
         this.thnum = thnum;
-        this.file = file;
+        this.dstFileName = dstFileName;
+        this.srcFileName = srcFileName;
         this.username = username;
         this.remoteHost = remoteHost;
         this.password = password;
     }
 
     //ssh session connect
-    public ChannelSftp setupJsch() throws JSchException, IOException {
+    public ChannelSftp setupJsch() throws JSchException {
         JSch jsch = new JSch();
         jsch.setKnownHosts("/Users/home/.ssh/known_hosts");
-
-        BufferedReader reader;
-        reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("config.txt"))));
-        String line = reader.readLine();
-        this.username = line;
-        line = reader.readLine();
-        this.remoteHost = line;
-        line = reader.readLine();
-        this.password = line;
-        reader.close();
 
         Session jschSession = jsch.getSession(username, remoteHost);
         jschSession.setPassword(password);
@@ -62,42 +54,36 @@ public class DownloadThread implements Runnable {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
 
-        //read config file
-        BufferedReader reader;
-        reader = new BufferedReader(new FileReader(String.valueOf(Paths.get("config.txt"))));
-        String line = null;
-        for (int i = 0; i < 4; ++i) {
-            line = reader.readLine();
-        }
-        String src = line;
-        reader.close();
-
         //InputStream inputStream = channelSftp.get(src,sftpprogressMonitor,offset);
         InputStream inputStream = null;
-        if (thnum == 0) inputStream = channelSftp.get(src);
-        else inputStream = channelSftp.get(src, null, offset);
+        if (thnum == 0) inputStream = channelSftp.get(srcFileName);
+        else inputStream = channelSftp.get(srcFileName, null, offset);
 
-        RandomAccessFile raf = new RandomAccessFile(String.valueOf(file), "rw");
+        RandomAccessFile raf = new RandomAccessFile(dstFileName, "rw");
 
         int flag = 0;
-        while (flag == 0) {
-            byte[] bytes = new byte[1024 * 8];
-            flag = inputStream.read(bytes, 0, bytes.length);
-            //System.out.println(thnum + ":" + flag);
-            if (flag == -1) break;
-            //offset + flag 값이 limit와 같을 때, > 조건문에 걸리지 않고 넘어가서 쓰레기값을 저장 할 수 있음, >=필요
-            if (offset + flag >= limit) {
-                raf.seek(offset);
-                raf.write(bytes, 0, (int) (limit - offset));
+        byte[] bytes = new byte[1024*8];
+        raf.seek(offset);
+        while(flag == 0){
+            flag = inputStream.read(bytes,0,bytes.length);
+            //inputStream.read() return 0 means reading empty file
+            if(flag == 0){
+                System.out.println("Source File is Empty File!");
                 break;
             }
-            raf.seek(offset);
-            raf.write(bytes, 0, bytes.length);
+            else if(flag == -1)break;
+            if(offset + flag >= limit){
+                raf.write(bytes,0,(int)(limit-offset));
+                break;
+            }
+            //flag만큼 write해야
+            raf.write(bytes,0, flag);
             offset += flag;
             flag = 0;
         }
         raf.close();
         inputStream.close();
         channelSftp.quit();
+        channelSftp.getSession().disconnect();
     }
 }

@@ -2,6 +2,9 @@ package Cli;
 
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TransferCliTest {
@@ -38,9 +41,18 @@ class TransferCliTest {
 
     @Test
     void lftp_CSV_SingleCommand_138MB_Test() {
-        String[] args = "lftp -t down -s /home/fasoo/sftp_dir/sftp_dirym.txt -d c:\\download.txt -c 4 ".split(" ");
+        String[] args = "lftp -t down -s /home/fasoo/sftp_dir/test_1.2GB.csv -d C:\\Users\\kim0m77\\IdeaProjects\\J_SFTP2\\download.csv -c 4 -u fasoo -host 192.168.21.224 -password thfals12 ".split(" ");
+        long beforeTime = System.currentTimeMillis();
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         assertEquals(exitCode, 0);
+        long afterTime = System.currentTimeMillis();
+        System.out.println((afterTime-beforeTime)/1000);
+    }
+
+    @Test
+    void filename_Test() {
+        Path of = Path.of("c:\\up.txt");
+        System.out.println(of.getFileName());
     }
 
 }
