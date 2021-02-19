@@ -1,8 +1,11 @@
 package LFTP;
 
 import com.jcraft.jsch.*;
+import net.schmizz.sshj.sftp.RemoteFile;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 
 public class UploadThread implements Runnable {
@@ -48,29 +51,28 @@ public class UploadThread implements Runnable {
     private void sftp_thread() throws IOException, JSchException, SftpException, InterruptedException {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
-        OutputStream outputStream = null;
-        //outputStream = channelSftp.put(dstFileName, null, ChannelSftp.APPEND, offset);
-        if(thnum==0) outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND,0);
-        else outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND,offset);
+
         InputStream inputStream = null;
         inputStream = new FileInputStream(srcFileName);
         inputStream.skipNBytes(offset);
+
+        OutputStream outputStream = null;
+        if(thnum==0) outputStream = channelSftp.put(dstFileName,null,ChannelSftp.OVERWRITE,0);
+        else outputStream = channelSftp.put(dstFileName,null,ChannelSftp.RESUME,offset);
+
         int flag = 0;
         byte[] bytes = new byte[1024 * 8];
         while (flag == 0) {
             flag = inputStream.read(bytes, 0, bytes.length);
-            //System.out.println(thnum + ":" + flag);
             if(flag == 0){
                 System.out.println("Source File is Empty File!");
                 break;
             }
             else if (flag == -1) break;
             if (offset + flag >= limit) {
-                //System.out.println(thnum + ":" + (limit - offset));
                 outputStream.write(bytes, 0, (int) (limit - offset));
                 break;
             }
-            //System.out.println(flag);
             outputStream.write(bytes, 0, flag);
             offset += flag;
             flag = 0;
@@ -79,5 +81,32 @@ public class UploadThread implements Runnable {
         outputStream.close();
         channelSftp.quit();
         channelSftp.getSession().disconnect();
+        //        FileOutputStream fileOutputStream = new FileOutputStream(String.valueOf(channelSftp.put(dstFileName)));
+//        FileChannel fileChannel = fileOutputStream.getChannel();
+//        fileChannel.position(offset);
+//        ByteBuffer byteBuffer = ByteBuffer.allocate(1024*8);
+//        int flag = 0;
+//        byte[] bytes = new byte[1024 * 8];
+//        while(flag==0){
+//            byteBuffer.put((byte) inputStream.read(bytes,0,bytes.length));
+//            flag = byteBuffer.remaining();
+//            System.out.println(flag);
+//            if(flag==0)break;
+//            if(offset+flag>=limit){
+//                //byteBuffer.clear();
+//                byteBuffer.flip();
+//                byteBuffer.get(bytes,0,byteBuffer.remaining());
+//                byteBuffer.clear();
+//                byteBuffer.put(bytes,0,(int)(limit-offset));
+//                //fileChannel.write(byteBuffer,(int)offset,(int)(limit-offset));
+//                //byteBuffer.flip();
+//                fileChannel.write(byteBuffer);
+//            }
+//            byteBuffer.flip();
+//            fileChannel.write(byteBuffer);
+//            byteBuffer.clear();
+//            offset+=flag;
+//            flag=0;
+//        }
     }
 }
