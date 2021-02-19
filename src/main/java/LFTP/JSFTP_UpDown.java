@@ -2,8 +2,7 @@ package LFTP;
 
 import com.jcraft.jsch.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,6 +34,31 @@ public class JSFTP_UpDown {
         jschSession.connect();
         return (ChannelSftp) jschSession.openChannel("sftp");
     }
+
+    public void putTest(String srcFileName, String dstFileName,String remoteDir, long offset) throws JSchException, IOException, SftpException {
+        ChannelSftp channelSftp = setupJsch();
+        channelSftp.connect();
+
+        InputStream inputStream = null;
+        inputStream = new FileInputStream(srcFileName);
+
+//        channelSftp.put(srcFileName, remoteDir);
+        //inputStream.skipNBytes(offset);
+        OutputStream outputStream = null;
+        outputStream = channelSftp.put(dstFileName,null,ChannelSftp.APPEND, 24);
+
+
+        int flag = 0;
+        byte[] bytes = new byte[24];
+        inputStream.skipNBytes(12);
+        flag = inputStream.read(bytes,0,12);
+
+        outputStream.write(bytes,0,flag);
+        channelSftp.quit();
+        channelSftp.getSession().disconnect();
+    }
+
+
 
     //get size of target file
     public long getSize(String srcFileName) throws JSchException, SftpException, IOException {
@@ -111,6 +135,16 @@ public class JSFTP_UpDown {
         channelSftp.quit();
         channelSftp.getSession().disconnect();
     }
+
+    public OutputStream makeOutputStream(String dstFileName,List<FileChunk> fileChunkList,int threadCount) throws IOException, JSchException, SftpException {
+        ChannelSftp channelSftp = setupJsch();
+        channelSftp.connect();
+
+        OutputStream outputStream = null;
+        outputStream = channelSftp.put(dstFileName,null,ChannelSftp.OVERWRITE, fileChunkList.get(threadCount).getOffset());
+        return outputStream;
+    }
+
 
     //remote file set size
     public void setLength(String srcFileName, String dstFileName, String remoteDir) throws IOException, JSchException, SftpException {

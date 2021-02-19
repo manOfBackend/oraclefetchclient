@@ -51,7 +51,7 @@ class TransferCliTest {
 
     @Test
     void lftp_upload_Test(){
-        String[] args = "lftp -t up -s C:\\Users\\kim0m77\\IdeaProjects\\J_SFTP2\\up_test.txt -d up_test2.txt -remotedir /home/fasoo/sftp_dir/ -c 1 -u fasoo -host 192.168.21.224 -password thfals12 ".split(" ");
+        String[] args = "lftp -t up -s C:\\Users\\kim0m77\\IdeaProjects\\J_SFTP2\\up_test.txt -d up_test.txt -remotedir /home/fasoo/sftp_dir/ -c 4 -u fasoo -host 192.168.21.224 -password thfals12 ".split(" ");
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         assertEquals(exitCode, 0);
     }

@@ -63,26 +63,36 @@ public class LftpCli implements Callable<Integer> {
 
     private void up(JSFTP_UpDown JS1) throws IOException, JSchException, SftpException {
 
-        //create empty file & put, set length remote file
+//        create empty file & put, set length remote file
         JS1.setLength(srcFileName, dstFileName, remoteDir);
-
-        //get sections of src file
+//
+//        get sections of src file
         List<FileChunk> fileChunkList = new ArrayList<>();
         fileChunkList = JS1.makeFileChunk1(threadCount, srcFileName);
+//
+        List<OutputStream> outputStreamList = new ArrayList<>();
+        for(int i=0;i<threadCount;++i){
+            OutputStream outputStream = JS1.makeOutputStream(remoteDir+dstFileName,fileChunkList,i);
+            outputStreamList.add(outputStream);
+        }
+//        making uploadThread & executing
+        MakingThreads_up(fileChunkList, outputStreamList);
 
-        //making uploadThread & executing
-        MakingThreads_up(fileChunkList);
+//        JS1.putTest(srcFileName,dstFileName,remoteDir,12);
+
+
     }
 
-    private void MakingThreads_up(List<FileChunk> fileChunkList) {
+    private void MakingThreads_up(List<FileChunk> fileChunkList, List<OutputStream> outputStreamList) {
         ExecutorService service = Executors.newFixedThreadPool(threadCount);
         List<CompletableFuture> futureList = new ArrayList<>();
         for (int i = 0; i < threadCount; ++i) {
-            futureList.add(CompletableFuture.runAsync(new UploadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, remoteDir+dstFileName, srcFileName, userName, remoteHost, password), service));
+            futureList.add(CompletableFuture.runAsync(new UploadThread(fileChunkList.get(i).getOffset(), fileChunkList.get(i).getLimit(), i, remoteDir+dstFileName, srcFileName, userName, remoteHost, password, outputStreamList.get(i)), service));
         }
         CompletableFuture<Void> futureAll = CompletableFuture.allOf(futureList.toArray(CompletableFuture[]::new)).thenRun(() -> {
             System.out.println("finish");
         });
+
         try {
             futureAll.get();
         } catch (InterruptedException | ExecutionException e) {

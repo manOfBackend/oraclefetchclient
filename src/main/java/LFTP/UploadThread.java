@@ -5,7 +5,10 @@ import net.schmizz.sshj.sftp.RemoteFile;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
 public class UploadThread implements Runnable {
@@ -17,6 +20,7 @@ public class UploadThread implements Runnable {
     private String userName;
     private String remoteHost;
     private String password;
+    private OutputStream outputStream;
 
     public ChannelSftp setupJsch() throws JSchException, IOException {
         JSch jsch = new JSch();
@@ -28,7 +32,7 @@ public class UploadThread implements Runnable {
         return (ChannelSftp) jschSession.openChannel("sftp");
     }
 
-    public UploadThread(long offset, long limit, int thnum, String dstFileName,String srcFileName, String userName, String remoteHost, String password) {
+    public UploadThread(long offset, long limit, int thnum, String dstFileName,String srcFileName, String userName, String remoteHost, String password, OutputStream outputStream) {
         this.offset = offset;
         this.limit = limit;
         this.thnum = thnum;
@@ -37,6 +41,7 @@ public class UploadThread implements Runnable {
         this.userName = userName;
         this.remoteHost = remoteHost;
         this.password = password;
+        this.outputStream = outputStream;
     }
 
     @Override
@@ -52,33 +57,42 @@ public class UploadThread implements Runnable {
         ChannelSftp channelSftp = setupJsch();
         channelSftp.connect();
 
-        InputStream inputStream = null;
-        inputStream = new FileInputStream(srcFileName);
-        inputStream.skipNBytes(offset);
+//        InputStream inputStream = null;
+//        inputStream = new FileInputStream(srcFileName);
+//        inputStream.skipNBytes(offset);
 
-        OutputStream outputStream = null;
-        if(thnum==0) outputStream = channelSftp.put(dstFileName,null,ChannelSftp.OVERWRITE,0);
-        else outputStream = channelSftp.put(dstFileName,null,ChannelSftp.RESUME,offset);
+        RandomAccessFile randomAccessFile = new RandomAccessFile(srcFileName,"r");
+        randomAccessFile.seek(offset);
+
+        //OutputStream outputStream = channelSftp.put(dstFileName,null,ChannelSftp.OVERWRITE,offset);
+//        OutputStream outputStream = null;
+//        if(thnum==0) outputStream = channelSftp.put(dstFileName,null,ChannelSftp.OVERWRITE,0);
+//        else outputStream = channelSftp.put(dstFileName,null,ChannelSftp.OVERWRITE, offset);
 
         int flag = 0;
         byte[] bytes = new byte[1024 * 8];
         while (flag == 0) {
-            flag = inputStream.read(bytes, 0, bytes.length);
+            //flag = inputStream.read(bytes, 0, 1024*8);
+            flag = randomAccessFile.read(bytes,0,bytes.length);
             if(flag == 0){
                 System.out.println("Source File is Empty File!");
                 break;
             }
             else if (flag == -1) break;
             if (offset + flag >= limit) {
+                System.out.println(thnum + " " + offset + " " + limit);
                 outputStream.write(bytes, 0, (int) (limit - offset));
+                outputStream.close();
+                randomAccessFile.close();
                 break;
             }
             outputStream.write(bytes, 0, flag);
             offset += flag;
             flag = 0;
         }
-        inputStream.close();
-        outputStream.close();
+        //inputStream.close();
+        //outputStream.close();
+        //randomAccessFile.close();
         channelSftp.quit();
         channelSftp.getSession().disconnect();
         //        FileOutputStream fileOutputStream = new FileOutputStream(String.valueOf(channelSftp.put(dstFileName)));
