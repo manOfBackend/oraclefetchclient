@@ -1,9 +1,11 @@
 package Cli;
 
+import DbManager.Oracle.OracleManager;
 import Uploader.OracleUploader;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 import static picocli.CommandLine.Command;
@@ -39,11 +41,19 @@ public class UploadCli implements Callable<Integer> {
         //TODO: UPLOAD LOGIC
         System.out.println("upload cli");
 
-        String createSql = Files.readString(createSqlFile.toPath());
-        String insertSql = Files.readString(insertSqlFile.toPath());
-        String inputFileName = inputFile.getPath();
+        final String createSql = Files.readString(createSqlFile.toPath());
+        final String insertSql = Files.readString(insertSqlFile.toPath());
+        final String inputFileName = inputFile.getPath();
 
-        Thread uploadThread = new Thread(new OracleUploader(createSql, insertSql, hostName, inputFileName, userName, password));
+//        Thread uploadThread = new Thread(new OracleUploader(createSql, insertSql, hostName, inputFileName, userName, password));
+        Thread uploadThread = new Thread(() -> {
+            try {
+                final OracleManager oracleManager = new OracleManager(hostName, userName, password);
+                oracleManager.upload(inputFileName);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
 
         uploadThread.start();
         uploadThread.join();

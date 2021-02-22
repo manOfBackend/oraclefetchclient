@@ -26,6 +26,8 @@ public class OracleManager {
 
     private final String password;
 
+    private final String tempTableName = "TEMP_ADID";
+
     public OracleManager(String hostName, String userName, String password) throws SQLException {
         this.hostName = hostName;
         this.userName = userName;
@@ -59,44 +61,76 @@ public class OracleManager {
     }
 
 
-    public void upload() {
-
-        System.out.println("Running: " + insertSql);
+    public void upload(String inputFileName) {
 
         try (
                 OracleConnection conn = createConnection(hostName, userName, password);
-                OraclePreparedStatement oracleStmt = (OraclePreparedStatement) conn.prepareStatement(insertSql);
                 BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(inputFileName), StandardCharsets.UTF_8)
         ) {
-            conn.setAutoCommit(false);
-            conn.setDefaultExecuteBatch(500);
-
             CSVReader reader = new CSVReader(bufferedReader);
 
             String[] records = reader.readNext();
 
+            int columnCount = records.length;
 
+            // create sql statement
+            String createSql = createSqlStatement(columnCount);
+
+            // create table
+            OraclePreparedStatement createStmt = (OraclePreparedStatement) conn.prepareStatement(createSql);
+            createStmt.execute();
+
+            // create insert into statement
+            String insertSql = createInsertStatement(columnCount);
+
+            // insert data into table
+            OraclePreparedStatement insertStmt = (OraclePreparedStatement) conn.prepareStatement(insertSql);
 
             while ((records = reader.readNext()) != null) {
-                int n = records.length;;
 
-                /*
-                sql_statement.setString(1, nextLine[0]);
-                sql_statement.setDouble(2,Double.parseDouble(nextLine[1]));
-                // Add the record to batch
-                sql_statement.addBatch();
-                 */
-                oracleStmt.addBatch();
+                for (int i = 0; i < columnCount; i++) {
+                    insertStmt.setString(i, records[i]);
+                }
+                insertStmt.addBatch();
+                insertStmt.clearParameters();
             }
 
-            long[] batchs = oracleStmt.executeLargeBatch();
-
+            insertStmt.executeBatch();
             conn.commit();
         } catch (SQLException | IOException | CsvValidationException throwables) {
             throwables.printStackTrace();
         }
 
 
+    }
+
+    private String createInsertStatement(int columnCount) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ");
+        sb.append(tempTableName);
+        sb.append("VALUES");
+        sb.append("(");
+        for (int i = 0; i < columnCount; i++) {
+            sb.append("?,");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(')');
+        return sb.toString();
+    }
+
+    public String createSqlStatement(int columnCount) {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CREATE TABLE ");
+        sb.append(tempTableName);
+        sb.append("(");
+        for (int i = 0; i < columnCount; i++) {
+            sb.append("A" + (i + 1)).append(" varchar2(255)").append(",");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(")");
+        return sb.toString();
     }
 
     public PreparedStatement createOraclePreparedStatement(String sql) throws SQLException {

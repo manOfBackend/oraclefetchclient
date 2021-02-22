@@ -70,7 +70,11 @@ public class OracleUploader implements Runnable {
 
             CSVReader reader = new CSVReader(bufferedReader);
 
-            String[] records = null;
+            String[] records = reader.readNext();
+
+            int columnCount = records.length;
+
+
 
             while ((records = reader.readNext()) != null) {
                 /*
