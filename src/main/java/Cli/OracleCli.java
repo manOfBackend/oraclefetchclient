@@ -92,8 +92,7 @@ public class OracleCli implements Callable<Integer> {
     }
 
     private int getChunkSize(double totalRowsCount) {
-        final int chunkSize = (int) Math.ceil(totalRowsCount / threadCount);
-        return chunkSize;
+        return (int) Math.ceil(totalRowsCount / threadCount);
     }
 
     private void createReadersAndWriters(String executeSql, String outputFileName, ExecutorService readerPool, ExecutorService writerPool, int chunkSize, List<CompletableFuture<Void>> readerList, List<CompletableFuture<Void>> writerList) throws SQLException {
