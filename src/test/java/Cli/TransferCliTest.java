@@ -11,14 +11,14 @@ class TransferCliTest {
 
     @Test
     void oracle_CSV_ParallelCommand_138MB_Test() {
-        String[] args = "-o c:\\adid_fetch\\output_adid.csv oracle -sql c:\\adid_fetch\\sql.txt -type CSV -c 4 --reader-type ORACLE -host jdbc:oracle:thin:@192.168.80.229:1521:xe -u c##jong -p guswhd12".split(" ");
+        String[] args = "-o c:\\adid_fetch\\output_adid.csv oracle -sql c:\\adid_fetch\\sql.txt -type CSV -c 4 -host jdbc:oracle:thin:@192.168.80.229:1521:xe -u c##jong -p guswhd12".split(" ");
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         assertEquals(exitCode, 0);
     }
 
     @Test
     void oracle_CSV_SingleCommand_138MB_Test() {
-        String[] args = "-o c:\\adid_fetch\\output_adid.csv oracle -sql c:\\adid_fetch\\sql.txt --reader-type ORACLE -type CSV -host jdbc:oracle:thin:@192.168.80.229:1521:xe -u c##jong -p guswhd12".split(" ");
+        String[] args = "-o c:\\adid_fetch\\output_adid.csv oracle -sql c:\\adid_fetch\\sql.txt -type CSV -host jdbc:oracle:thin:@192.168.80.229:1521:xe -u c##jong -p guswhd12".split(" ");
         int exitCode = new CommandLine(new TransferCli()).execute(args);
         assertEquals(exitCode, 0);
     }

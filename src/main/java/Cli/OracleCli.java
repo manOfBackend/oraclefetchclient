@@ -1,6 +1,7 @@
 package Cli;
 
 import DbManager.Oracle.OracleManager;
+import Downloader.Reader.BlockingQueue.Impl.HiveReader;
 import Downloader.Reader.BlockingQueue.Impl.OracleParallelReader;
 import Downloader.Reader.BlockingQueue.Reader;
 import Downloader.Reader.ReaderType;
@@ -41,9 +42,6 @@ public class OracleCli implements Callable<Integer> {
     @Option(names = {"-type", "--file-type"}, description = "Write File Type (CSV, PARQUET)", required = true)
     private FileType fileType;
 
-    @Option(names = {"-reader", "--reader-type"}, description = "Fetch Reader Type (HIVE, ORACLE)", required = true)
-    private ReaderType readerType;
-
     @Option(names = {"-s", "--fetch-size"}, defaultValue = "10000")
     private int fetchSize;
 
@@ -75,7 +73,7 @@ public class OracleCli implements Callable<Integer> {
 
         List<QueueManager<?>> queueManagerList = createQueueManagers(fileType, threadCount);
 
-        List<CompletableFuture<Void>> readerList = createReaders(executeSql, outputFileName, readerPool, chunkSize, readerType, queueManagerList);
+        List<CompletableFuture<Void>> readerList = createReaders(executeSql, outputFileName, readerPool, chunkSize, queueManagerList);
         List<CompletableFuture<Void>> writerList = createWriters(outputFileName, writerPool, fileType, queueManagerList);
 
         final CompletableFuture<Void> readerAll = CompletableFuture.allOf(readerList.toArray(CompletableFuture[]::new)).thenRunAsync(() -> {
@@ -114,25 +112,16 @@ public class OracleCli implements Callable<Integer> {
         return list;
     }
 
-    private List<CompletableFuture<Void>> createReaders(String executeSql, String outputFileName, ExecutorService readerPool, int chunkSize, ReaderType readerType, List<QueueManager<?>> queueManagerList) throws SQLException {
+    private List<CompletableFuture<Void>> createReaders(String executeSql, String outputFileName, ExecutorService readerPool, int chunkSize, List<QueueManager<?>> queueManagerList) throws SQLException {
         int offset = 0;
 
         List<CompletableFuture<Void>> list = new ArrayList<>();
 
-        for (int i = 0; i < queueManagerList.size(); i++) {
+        for (QueueManager<?> queueManager : queueManagerList) {
 
-            final OracleManager oracleManager = new OracleManager(hostName, userName, password);
-
-            Reader reader = null;
-
-            switch (readerType) {
-                case ORACLE -> {
-                    reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queueManagerList.get(i));
-                }
-                case HIVE -> {
-                }
-            }
-
+            Reader reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize,
+                    new OracleManager(hostName, userName, password),
+                    queueManager);
             list.add(CompletableFuture.runAsync(reader, readerPool).thenRun(() -> {
                 //reader.close();
             }));

@@ -14,6 +14,7 @@ import static picocli.CommandLine.Option;
         subcommands =
                 {
                         OracleCli.class,
+                        HiveCli.class,
                         UploadCli.class,
                         LftpCli.class
 
