@@ -4,6 +4,7 @@ import DbManager.Oracle.OracleManager;
 import Uploader.OracleUploader;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
@@ -48,9 +49,10 @@ public class UploadCli implements Callable<Integer> {
 //        Thread uploadThread = new Thread(new OracleUploader(createSql, insertSql, hostName, inputFileName, userName, password));
         Thread uploadThread = new Thread(() -> {
             try {
-                final OracleManager oracleManager = new OracleManager(hostName, userName, password);
-                oracleManager.upload(inputFileName);
-            } catch (SQLException throwables) {
+                try(OracleManager oracleManager = new OracleManager(hostName, userName, password)) {
+                    oracleManager.upload(inputFileName);
+                }
+            } catch (SQLException | IOException throwables) {
                 throwables.printStackTrace();
             }
         });

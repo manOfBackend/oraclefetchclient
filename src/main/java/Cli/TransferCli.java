@@ -13,8 +13,7 @@ import static picocli.CommandLine.Option;
 @Command(description = "ADID Transfer", name = "transfer", mixinStandardHelpOptions = true, version = "transfer 1.0",
         subcommands =
                 {
-                        SingleCli.class,
-                        ParallelCli.class,
+                        OracleCli.class,
                         UploadCli.class,
                         LftpCli.class
 
