@@ -31,7 +31,7 @@ public class HiveReader extends Reader {
     }
 
     @Override
-    public Connection createConnection(String hostName) throws SQLException {
+    public Connection createConnection() throws SQLException {
         final HiveDriver hiveDriver = new HiveDriver();
         final Properties properties = new Properties();
         properties.setProperty("user", userName);

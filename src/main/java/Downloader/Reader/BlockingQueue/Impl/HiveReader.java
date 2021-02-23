@@ -1,6 +1,7 @@
 package Downloader.Reader.BlockingQueue.Impl;
 
-import Downloader.Reader.Disruptor.Reader;
+import Downloader.Reader.BlockingQueue.Reader;
+import Queue.BlockingQueue.QueueManager;
 import Queue.Disruptor.ResultSetEventProducer;
 import org.apache.hive.jdbc.HiveDriver;
 
@@ -12,8 +13,10 @@ import java.util.Properties;
 
 public class HiveReader extends Reader {
 
-    public HiveReader(int fetchSize, String tableName, String hostName, String userName, String password, ResultSetEventProducer producer) {
-        super(fetchSize, tableName, hostName, userName, password, producer);
+    private final static HiveDriver hiveDriver = new HiveDriver();
+
+    public HiveReader(int fetchSize, String sql, String hostName, String userName, String password, QueueManager<?> queueManager) {
+        super(fetchSize, sql, hostName, userName, password, queueManager);
     }
 
     @Override
@@ -29,12 +32,17 @@ public class HiveReader extends Reader {
     }
 
     @Override
-    public Connection createConnection(String hostName) throws SQLException {
-        final HiveDriver hiveDriver = new HiveDriver();
+    public Connection createConnection() throws SQLException {
+
         final Properties properties = new Properties();
         properties.setProperty("user", userName);
         properties.setProperty("password", password);
 
         return hiveDriver.connect(hostName, properties);
+    }
+
+    @Override
+    public void close() {
+
     }
 }

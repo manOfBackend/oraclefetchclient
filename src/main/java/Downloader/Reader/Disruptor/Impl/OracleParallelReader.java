@@ -43,7 +43,7 @@ public class OracleParallelReader extends Reader {
     }
 
     @Override
-    public Connection createConnection(String hostName) throws SQLException {
-        return oracleManager.createConnection(hostName, userName, password);
+    public Connection createConnection() throws SQLException {
+        return oracleManager.getConnection();
     }
 }

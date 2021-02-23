@@ -33,14 +33,14 @@ public abstract class Reader implements Runnable {
 
     public abstract ResultSet createResultSet(Connection conn, String sql, int fetchSize) throws SQLException;
 
-    public abstract Connection createConnection(String hostName) throws SQLException;
+    public abstract Connection createConnection() throws SQLException;
 
     @Override
     public void run() {
         final String sql = "SELECT * FROM " + tableName;
         System.out.println("Running: " + sql);
 
-        try (Connection conn = createConnection(hostName);
+        try (Connection conn = createConnection();
              ResultSet resultSet = createResultSet(conn, sql, fetchSize)) {
             if (conn == null) {
                 throw new SQLException("no connection");

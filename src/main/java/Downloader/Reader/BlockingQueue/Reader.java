@@ -1,6 +1,7 @@
 package Downloader.Reader.BlockingQueue;
 
 import Queue.BlockingQueue.QueueManager;
+import oracle.ons.Closable;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,7 +12,7 @@ import java.sql.SQLException;
  * BlockingQueue를 사용하는 버전
  * run() 메서드를 템플릿 메서드로 구현
  */
-public abstract class Reader implements Runnable {
+public abstract class Reader implements Runnable, Closable {
 
     // 쿼리당 가져오는 Row 수
     protected int fetchSize = 10;
@@ -43,13 +44,12 @@ public abstract class Reader implements Runnable {
 
     public abstract ResultSet createResultSet(Connection conn, String sql, int fetchSize) throws SQLException;
 
-    public abstract Connection createConnection(String hostName) throws SQLException;
+    public abstract Connection createConnection() throws SQLException;
 
     @Override
     public void run() {
-        System.out.println("Running: " + sql);
-
-        try (Connection conn = createConnection(hostName);
+        
+        try (Connection conn = createConnection();
              ResultSet resultSet = createResultSet(conn, sql, fetchSize)) {
             if (conn == null) {
                 throw new SQLException("no connection");

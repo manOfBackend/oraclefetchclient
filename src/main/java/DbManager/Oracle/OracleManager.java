@@ -7,6 +7,7 @@ import oracle.jdbc.driver.OracleConnection;
 import oracle.jdbc.driver.OracleDriver;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,7 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class OracleManager {
+public class OracleManager implements Closeable {
 
     private final OracleConnection connection;
 
@@ -27,6 +28,8 @@ public class OracleManager {
     private final String password;
 
     private final String tempTableName = "TEMP_ADID";
+
+    private static final int EXECUTE_BATCH_SIZE = 500;
 
     public OracleManager(String hostName, String userName, String password) throws SQLException {
         this.hostName = hostName;
@@ -48,7 +51,11 @@ public class OracleManager {
         return password;
     }
 
-    public OracleConnection createConnection(String hostName, String userName, String password) throws SQLException {
+    public OracleConnection getConnection() {
+        return connection;
+    }
+
+    private OracleConnection createConnection(String hostName, String userName, String password) throws SQLException {
         final OracleDriver orcDriver = new OracleDriver();
         final Properties properties = new Properties();
         properties.setProperty("user", userName);
@@ -56,7 +63,7 @@ public class OracleManager {
 
         final OracleConnection connect = (OracleConnection) orcDriver.connect(hostName, properties);
         connect.setAutoCommit(false);
-        connect.setDefaultExecuteBatch(500);
+        connect.setDefaultExecuteBatch(EXECUTE_BATCH_SIZE);
         return connect;
     }
 
@@ -64,7 +71,7 @@ public class OracleManager {
     public void upload(String inputFileName) {
 
         try (
-                OracleConnection conn = createConnection(hostName, userName, password);
+               // OracleConnection connection = createConnection(hostName, userName, password);
                 BufferedReader bufferedReader = Files.newBufferedReader(Paths.get(inputFileName), StandardCharsets.UTF_8)
         ) {
             CSVReader reader = new CSVReader(bufferedReader);
@@ -73,19 +80,15 @@ public class OracleManager {
 
             int columnCount = records.length;
 
-            // create sql statement
-            String createSql = createSqlStatement(columnCount);
-
-            // create table
-            OraclePreparedStatement createStmt = (OraclePreparedStatement) conn.prepareStatement(createSql);
-            createStmt.execute();
+            createTempTable(columnCount);
 
             // create insert into statement
             String insertSql = createInsertStatement(columnCount);
 
             // insert data into table
-            OraclePreparedStatement insertStmt = (OraclePreparedStatement) conn.prepareStatement(insertSql);
+            OraclePreparedStatement insertStmt = (OraclePreparedStatement) createOraclePreparedStatement(insertSql);
 
+            int batchCount = 0;
             while ((records = reader.readNext()) != null) {
 
                 for (int i = 0; i < columnCount; i++) {
@@ -93,15 +96,33 @@ public class OracleManager {
                 }
                 insertStmt.addBatch();
                 insertStmt.clearParameters();
+                batchCount++;
+
+                if (batchCount == EXECUTE_BATCH_SIZE) {
+                    insertStmt.executeBatch();
+                    connection.commit();
+                    batchCount = 0;
+                }
+
             }
 
             insertStmt.executeBatch();
-            conn.commit();
-        } catch (SQLException | IOException | CsvValidationException throwables) {
+            connection.commit();
+        }
+        catch (SQLException | IOException | CsvValidationException throwables) {
             throwables.printStackTrace();
         }
 
 
+    }
+
+    private void createTempTable(int columnCount) throws SQLException {
+        // create sql statement
+        String createSql = createSqlStatement(columnCount);
+
+        // create table
+        OraclePreparedStatement createStmt = (OraclePreparedStatement) createOraclePreparedStatement(createSql);
+        createStmt.execute();
     }
 
     private String createInsertStatement(int columnCount) {
@@ -118,7 +139,7 @@ public class OracleManager {
         return sb.toString();
     }
 
-    public String createSqlStatement(int columnCount) {
+    private String createSqlStatement(int columnCount) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -126,7 +147,7 @@ public class OracleManager {
         sb.append(tempTableName);
         sb.append("(");
         for (int i = 0; i < columnCount; i++) {
-            sb.append("A" + (i + 1)).append(" varchar2(255)").append(",");
+            sb.append("A").append(i + 1).append(" varchar2(255)").append(",");
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
@@ -152,7 +173,12 @@ public class OracleManager {
     }
 
 
-
-
-
+    @Override
+    public void close() throws IOException {
+        try {
+            connection.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
 }
