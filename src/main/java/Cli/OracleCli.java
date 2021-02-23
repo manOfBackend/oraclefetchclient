@@ -95,45 +95,6 @@ public class OracleCli implements Callable<Integer> {
         return (int) Math.ceil(totalRowsCount / threadCount);
     }
 
-    private void createReadersAndWriters(String executeSql, String outputFileName, ExecutorService readerPool, ExecutorService writerPool, int chunkSize, List<CompletableFuture<Void>> readerList, List<CompletableFuture<Void>> writerList) throws SQLException {
-        int offset = 0;
-        for (int i = 0; i < threadCount; i++) {
-
-            System.out.println(i + " : " + executeSql);
-            final OracleManager oracleManager = new OracleManager(hostName, userName, password);
-
-            Reader reader = null;
-            Writer writer = null;
-
-            // TODO: switch JVM 버전에 따라 호환성 문제가 있을 수 있다. 고객사의 jvm 버전이 높지는 않을 것
-            switch (fileType) {
-                case PARQUET -> {
-                    ParquetQueueManager queue = new ParquetQueueManager(new OracleTransformer(), "jong2", "com.jong2");
-                    reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queue);
-                    writer = new ParquetWriter(outputFileName + i, queue);
-                }
-                case CSV -> {
-                    CSVQueueManager queue = new CSVQueueManager();
-                    reader = new OracleParallelReader(executeSql, fetchSize, offset, chunkSize, oracleManager, queue);
-                    writer = new CSVWriter(outputFileName + i, queue);
-                }
-                case DISRUPTOR_CSV -> {
-                    return;
-                }
-                default -> {
-                    return;
-                }
-            }
-
-            readerList.add(CompletableFuture.runAsync(reader, readerPool).thenRun(() -> {
-                //reader.close();
-            }));
-            writerList.add(CompletableFuture.runAsync(writer, writerPool));
-            offset += chunkSize;
-        }
-    }
-
-
     private List<QueueManager<?>> createQueueManagers(FileType fileType, int threadCount) {
 
         List<QueueManager<?>> list = new ArrayList<>();
